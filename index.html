@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>대건고 주식 모의투자 (V5 - Ranking & Admin)</title>
+    <title>대건고 주식 모의투자 (V6 - Chart & Info)</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
         body { font-family: 'Noto Sans KR', sans-serif; background-color: #f3f4f6; }
@@ -24,7 +25,7 @@
         <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border border-gray-100">
             <div class="text-center mb-8">
                 <h1 class="text-3xl font-bold text-indigo-700 mb-2">📈 대건고 주식 모의투자</h1>
-                <p class="text-gray-500 text-sm">실시간 랭킹 & 유동성 시스템</p>
+                <p class="text-gray-500 text-sm">실시간 차트 & 랭킹 시스템</p>
             </div>
             
             <form id="login-form" class="space-y-5" onsubmit="return false;">
@@ -126,14 +127,14 @@
                 <div class="bg-white rounded-xl shadow-lg flex flex-col h-[550px]">
                     <div class="p-4 border-b flex justify-between items-center bg-gray-50 rounded-t-xl">
                         <h2 class="text-lg font-bold text-gray-700">KOSPI 주요 종목 (37개)</h2>
-                        <span class="text-xs text-gray-500">* 실시간 변동</span>
+                        <span class="text-xs text-gray-500">* 리스트 고정됨</span>
                     </div>
                     
                     <div class="grid grid-cols-12 gap-2 px-4 py-2 bg-gray-100 text-xs font-bold text-gray-500">
                         <div class="col-span-4">종목명</div>
                         <div class="col-span-3 text-right">현재가</div>
                         <div class="col-span-3 text-right">등락률</div>
-                        <div class="col-span-2 text-center">주문</div>
+                        <div class="col-span-2 text-center">분석/주문</div>
                     </div>
 
                     <div id="stock-list" class="flex-grow overflow-y-auto divide-y divide-gray-100">
@@ -155,20 +156,30 @@
         </div>
     </div>
 
-    <div id="trade-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden transform transition-all scale-100">
-            <div class="p-6">
-                <div class="flex justify-between items-start mb-4">
-                    <div>
-                        <h3 id="modal-stock-name" class="text-xl font-bold text-gray-900">삼성전자</h3>
-                        <p id="modal-stock-code" class="text-xs text-gray-500">005930</p>
-                    </div>
-                    <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">✕</button>
+    <div id="trade-modal" class="hidden fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all scale-100">
+            <div class="p-4 border-b flex justify-between items-center bg-gray-50">
+                <div>
+                    <h3 id="modal-stock-name" class="text-xl font-bold text-gray-900">삼성전자</h3>
+                    <span id="modal-stock-code" class="text-xs text-gray-500 bg-gray-200 px-2 py-0.5 rounded">005930</span>
+                    <span id="modal-sector" class="text-xs font-bold text-indigo-600 ml-2">IT Sector</span>
+                </div>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 font-bold text-xl">✕</button>
+            </div>
+
+            <div class="p-6 overflow-y-auto max-h-[80vh]">
+                <div class="mb-6">
+                    <canvas id="stockChart" width="400" height="200"></canvas>
                 </div>
 
-                <div class="flex items-center justify-between mb-6">
+                <div class="bg-indigo-50 p-3 rounded-lg mb-6 text-sm text-indigo-800">
+                    <span class="font-bold">📢 기업 정보:</span>
+                    <span id="modal-desc">대한민국을 대표하는 글로벌 기업입니다.</span>
+                </div>
+
+                <div class="flex items-center justify-between mb-4">
                     <span class="text-sm text-gray-600">현재가</span>
-                    <span id="modal-price" class="text-2xl font-bold text-indigo-600">70,000</span>
+                    <span id="modal-price" class="text-3xl font-bold text-indigo-600">70,000</span>
                 </div>
 
                 <div class="flex mb-4 bg-gray-100 p-1 rounded-lg">
@@ -192,7 +203,9 @@
                     <div class="flex justify-between text-xs text-gray-400">
                         <span>가용 자산/보유</span>
                         <span id="available-asset">0원</span>
-                        <span class="text-gray-400 ml-2">시장영향도: <span id="market-impact">0.00%</span></span>
+                    </div>
+                    <div class="text-right text-xs text-gray-400">
+                        시장영향도: <span id="market-impact">0.00%</span>
                     </div>
                 </div>
 
@@ -235,14 +248,13 @@
         const VIRTUAL_MARKET_DEPTH = 50000; 
         const ADMIN_EMAIL = "poiujuy0014@pess.cnehs.kr";
 
-        // 사용자 명단
         const USERS_DB = [
             { name: "하미경", email: "mk3324@pess.cnehs.kr" },
-            { name: "김태준", email: "poiujuy0014@pess.cnehs.kr" }, // 관리자
+            { name: "김태준", email: "poiujuy0014@pess.cnehs.kr" }, 
             { name: "강은성", email: "rkd2022@pess.cnehs.kr" },
         ];
 
-        // 37개 종목 초기 데이터 (생략 없이 사용)
+        // 37개 종목 초기 데이터 (고정 리스트용)
         const INITIAL_STOCKS = [
             { code: "005930", name: "삼성전자", sector: "IT", price: 72500 }, { code: "000660", name: "SK하이닉스", sector: "IT", price: 132000 },
             { code: "035420", name: "NAVER", sector: "Platform", price: 205000 }, { code: "035720", name: "카카오", sector: "Platform", price: 54000 },
@@ -306,7 +318,8 @@
         let userPortfolio = { cash: 50000000, holdings: {} };
         let tradeState = { type: 'buy', code: null };
         let gameState = { day: 1, isOpen: false, gameVersion: 0 }; 
-        let allUsersCache = []; // 랭킹용
+        let allUsersCache = [];
+        let chartInstance = null; // 차트 객체 저장용
 
         // --- 인증 로직 ---
         async function login(e) {
@@ -344,7 +357,7 @@
                 document.getElementById('game-screen').classList.remove('hidden');
                 setupUI();
                 startRealtimeSync();
-                subscribeToRankings(); // 랭킹 구독 시작
+                subscribeToRankings();
             } catch (err) {
                 console.error(err);
                 document.getElementById('login-msg').textContent = "로그인 오류: " + err.message;
@@ -362,7 +375,7 @@
                     marketData = data.stocks || {};
                     gameState = { day: data.day || 1, isOpen: data.isOpen, gameVersion: data.gameVersion || 1 };
                     await checkAndResetUserData(gameState.gameVersion);
-                    updateMarketUI(); // 여기서 랭킹도 같이 업데이트
+                    updateMarketUI(); 
                 } else if (currentUser.role === 'admin') {
                     initMarketData();
                 }
@@ -385,7 +398,6 @@
             });
         }
         
-        // --- 랭킹 시스템 (모든 유저 구독) ---
         function subscribeToRankings() {
             const q = query(collection(db, `artifacts/${appId}/users`));
             onSnapshot(q, (snapshot) => {
@@ -393,17 +405,14 @@
                 snapshot.forEach(doc => {
                     allUsersCache.push(doc.data());
                 });
-                renderRankings(); // 유저 정보 변경 시 갱신
+                renderRankings();
             });
         }
 
         function renderRankings() {
             const listEl = document.getElementById('ranking-list');
-            
-            // 아직 시장 데이터가 없으면 대기
             if (Object.keys(marketData).length === 0 || allUsersCache.length === 0) return;
 
-            // 각 유저의 총 평가 자산 계산
             const rankedUsers = allUsersCache.map(user => {
                 let stockVal = 0;
                 if (user.holdings) {
@@ -419,11 +428,10 @@
                 };
             });
 
-            // 자산순 정렬 (내림차순)
             rankedUsers.sort((a, b) => b.total - a.total);
 
             listEl.innerHTML = '';
-            rankedUsers.slice(0, 10).forEach((u, index) => { // Top 10만 표시
+            rankedUsers.slice(0, 10).forEach((u, index) => { 
                 const rank = index + 1;
                 let rankClass = "bg-gray-100 text-gray-600";
                 if(rank === 1) rankClass = "gold-rank font-bold";
@@ -471,7 +479,6 @@
                 startAutoSimulation(); 
                 alert("시장이 시작되었습니다!");
             } else if (action === 'stop' || action === 'close') {
-                // [수정] 장 중단/마감 로직
                 await updateDoc(marketRef, { isOpen: false });
                 if (simInterval) clearInterval(simInterval);
                 alert("장이 마감되었습니다.");
@@ -487,7 +494,8 @@
             INITIAL_STOCKS.forEach(s => {
                 initialData[s.code] = {
                     name: s.name, price: s.price, basePrice: s.price,
-                    change: 0, rate: 0, sector: s.sector
+                    change: 0, rate: 0, sector: s.sector,
+                    history: [s.price] // 차트 데이터 초기화
                 };
             });
             await setDoc(doc(db, `artifacts/${appId}/public/market_state`), {
@@ -502,7 +510,8 @@
             INITIAL_STOCKS.forEach(s => {
                 initialData[s.code] = {
                     name: s.name, price: s.price, basePrice: s.price,
-                    change: 0, rate: 0, sector: s.sector
+                    change: 0, rate: 0, sector: s.sector,
+                    history: [s.price]
                 };
             });
             await setDoc(doc(db, `artifacts/${appId}/public/market_state`), {
@@ -515,7 +524,6 @@
             if (simInterval) clearInterval(simInterval);
             
             simInterval = setInterval(async () => {
-                // 관리자가 끄거나 DB에서 isOpen이 false면 중단
                 if (!gameState.isOpen) {
                     clearInterval(simInterval);
                     return;
@@ -523,7 +531,6 @@
 
                 const updates = {};
                 let newsEvents = [];
-
                 const triggerNews = Math.random() < 0.05; 
                 let affectedStocks = [];
                 let newsImpactVal = 0;
@@ -535,9 +542,7 @@
                     if (scopeRand < 0.2) { 
                         const templates = NEWS_TEMPLATES['Market'];
                         const tmpl = templates[Math.floor(Math.random() * templates.length)];
-                        newsText = tmpl.text;
-                        newsType = tmpl.type;
-                        newsImpactVal = tmpl.impact;
+                        newsText = tmpl.text; newsType = tmpl.type; newsImpactVal = tmpl.impact;
                         affectedStocks = Object.keys(marketData); 
                     } 
                     else if (scopeRand < 0.5) { 
@@ -547,8 +552,7 @@
                         const templates = NEWS_TEMPLATES[sector] || NEWS_TEMPLATES['Default'];
                         const tmpl = templates[Math.floor(Math.random() * templates.length)];
                         newsText = `[${sector}] ` + tmpl.text.replace("{name}", sector + " 업계");
-                        newsType = tmpl.type;
-                        newsImpactVal = tmpl.impact;
+                        newsType = tmpl.type; newsImpactVal = tmpl.impact;
                         affectedStocks = codes.filter(c => marketData[c].sector === sector);
                     } 
                     else { 
@@ -558,8 +562,7 @@
                         const templates = NEWS_TEMPLATES[targetStock.sector] || NEWS_TEMPLATES['Default'];
                         const tmpl = templates[Math.floor(Math.random() * templates.length)];
                         newsText = tmpl.text.replace("{name}", targetStock.name);
-                        newsType = tmpl.type;
-                        newsImpactVal = tmpl.impact;
+                        newsType = tmpl.type; newsImpactVal = tmpl.impact;
                         affectedStocks = [targetCode];
                     }
                 }
@@ -574,9 +577,16 @@
                     }
 
                     let newPrice = Math.round(stock.price * (1 + changePct));
+                    
+                    // [차트용 데이터 저장] 최근 30개 유지
+                    let history = stock.history || [];
+                    history.push(newPrice);
+                    if (history.length > 30) history.shift();
+
                     updates[`stocks.${code}.price`] = newPrice;
                     updates[`stocks.${code}.change`] = newPrice - stock.basePrice;
                     updates[`stocks.${code}.rate`] = ((newPrice - stock.basePrice) / stock.basePrice) * 100;
+                    updates[`stocks.${code}.history`] = history;
                 });
 
                 const marketRef = doc(db, `artifacts/${appId}/public/market_state`);
@@ -600,16 +610,74 @@
             }, 4000); 
         }
 
+        // --- 차트 및 모달 로직 ---
         window.openTradeModal = (code) => {
             if (!gameState.isOpen) return alert("현재 장이 마감되었습니다. 거래할 수 없습니다.");
+            
+            const stock = marketData[code];
             tradeState.code = code;
             tradeState.type = 'buy';
-            document.getElementById('modal-stock-name').innerText = marketData[code].name;
+            
+            document.getElementById('modal-stock-name').innerText = stock.name;
             document.getElementById('modal-stock-code').innerText = code;
+            document.getElementById('modal-sector').innerText = stock.sector + " Sector";
+            document.getElementById('modal-desc').innerText = getCompanyDesc(stock.sector, stock.name);
             document.getElementById('trade-qty').value = 1;
+
             updateModalUI();
             document.getElementById('trade-modal').classList.remove('hidden');
+
+            // 차트 렌더링
+            renderChart(stock.history || [stock.price], stock.name);
         };
+
+        function getCompanyDesc(sector, name) {
+            const descs = {
+                'IT': "대한민국을 대표하는 최첨단 반도체 및 IT 기술 기업입니다.",
+                'Platform': "전 국민이 사용하는 디지털 플랫폼 서비스를 제공합니다.",
+                'Battery': "전기차 시대의 핵심인 2차 전지를 생산하는 기업입니다.",
+                'Auto': "글로벌 시장에서 활약하는 자동차 제조 기업입니다.",
+                'Defense': "국가 안보를 책임지는 방위 산업 선도 기업입니다.",
+                'Ship': "세계 최고의 기술력을 자랑하는 조선 해양 기업입니다.",
+                'Bio': "인류의 건강을 위한 신약 및 바이오 의약품 개발사입니다.",
+                'Enter': "K-POP 문화를 전 세계로 확산시키는 엔터테인먼트사입니다.",
+            };
+            return descs[sector] || `${name}은(는) 해당 분야에서 꾸준한 성장을 보이고 있습니다.`;
+        }
+
+        function renderChart(data, label) {
+            const ctx = document.getElementById('stockChart').getContext('2d');
+            if (chartInstance) chartInstance.destroy();
+
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: Array.from({length: data.length}, (_, i) => i + 1),
+                    datasets: [{
+                        label: label + ' 주가',
+                        data: data,
+                        borderColor: '#4f46e5',
+                        backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        fill: true,
+                        pointRadius: 0 // 포인트 숨김
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { display: false },
+                        y: { 
+                            beginAtZero: false,
+                            grid: { display: true, color: '#f3f4f6' }
+                        }
+                    },
+                    animation: { duration: 0 } // 깜빡임 방지
+                }
+            });
+        }
 
         window.setTradeType = (type) => {
             tradeState.type = type;
@@ -718,13 +786,19 @@
                     let newMarketPrice = Math.round(currentPrice * (1 + priceImpactPct));
                     if (newMarketPrice < 1) newMarketPrice = 1;
 
+                    // 차트 데이터 갱신
+                    let history = stock.history || [];
+                    history.push(newMarketPrice);
+                    if (history.length > 30) history.shift();
+
                     transaction.update(userRef, { cash: newCash, holdings: newHoldings });
                     
                     const updates = {};
                     updates[`stocks.${code}.price`] = newMarketPrice;
                     updates[`stocks.${code}.change`] = newMarketPrice - stock.basePrice;
                     updates[`stocks.${code}.rate`] = ((newMarketPrice - stock.basePrice) / stock.basePrice) * 100;
-                    
+                    updates[`stocks.${code}.history`] = history;
+
                     transaction.update(marketRef, updates);
                 });
                 
@@ -741,6 +815,7 @@
             if (currentUser.role === 'admin') document.getElementById('admin-panel').classList.remove('hidden');
         }
 
+        // [리스트 고정] 순서 섞임 방지
         function updateMarketUI() {
             const badge = document.getElementById('market-status-badge');
             if (gameState.isOpen) {
@@ -755,8 +830,14 @@
             const listEl = document.getElementById('stock-list');
             listEl.innerHTML = ''; 
             
-            Object.keys(marketData).forEach(code => {
-                const s = marketData[code];
+            // INITIAL_STOCKS 순서대로 루프 (리스트 위치 고정)
+            INITIAL_STOCKS.forEach(initStock => {
+                const code = initStock.code;
+                const s = marketData[code]; 
+                
+                // 데이터가 아직 로드 안 됐으면 초기값 사용
+                if (!s) return; 
+
                 const colorClass = s.rate > 0 ? 'price-up' : (s.rate < 0 ? 'price-down' : 'text-gray-500');
                 const sign = s.rate > 0 ? '▲' : (s.rate < 0 ? '▼' : '');
                 
@@ -767,13 +848,12 @@
                     <div class="col-span-3 text-right font-bold ${colorClass}">${s.price.toLocaleString()}</div>
                     <div class="col-span-3 text-right text-xs ${colorClass}">${sign} ${s.rate.toFixed(2)}%</div>
                     <div class="col-span-2 text-center">
-                        <button onclick="openTradeModal('${code}')" class="bg-gray-100 hover:bg-indigo-100 text-indigo-600 px-3 py-1 rounded text-xs font-bold transition">주문</button>
+                        <button onclick="openTradeModal('${code}')" class="bg-gray-100 hover:bg-indigo-100 text-indigo-600 px-3 py-1 rounded text-xs font-bold transition">분석/주문</button>
                     </div>
                 `;
                 listEl.appendChild(div);
             });
 
-            // 주가가 변하면 랭킹도 갱신
             renderRankings();
         }
 
