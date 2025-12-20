@@ -698,16 +698,39 @@
             updateModalUI();
         };
 
+      // 수수료율 상수 정의 (매수 0.15%, 매도 0.3%)
+        const FEE_RATES = { buy: 0.0015, sell: 0.003 }; 
+
         window.calcTotal = () => updateModalUI();
 
         function updateModalUI() {
             const stock = marketData[tradeState.code];
             const price = stock.price;
             const qty = parseInt(document.getElementById('trade-qty').value) || 0;
-            const total = price * qty;
+            
+            // [수정] 수수료 계산 로직 추가
+            const rawTotal = price * qty; // 순수 주식 가격
+            const feeRate = tradeState.type === 'buy' ? FEE_RATES.buy : FEE_RATES.sell;
+            const fee = Math.floor(rawTotal * feeRate);
+            
+            let finalTotal = 0;
+            let feeText = "";
+
+            if (tradeState.type === 'buy') {
+                finalTotal = rawTotal + fee; // 살 때는 돈을 더 냄
+                feeText = `(수수료 ${fee.toLocaleString()}원 포함)`;
+            } else {
+                finalTotal = rawTotal - fee; // 팔 때는 돈을 떼임
+                feeText = `(세금/수수료 ${fee.toLocaleString()}원 차감)`;
+            }
             
             document.getElementById('modal-price').innerText = price.toLocaleString();
-            document.getElementById('trade-total').innerText = total.toLocaleString() + "원";
+            
+            // 금액 표시 부분 개선
+            document.getElementById('trade-total').innerHTML = `
+                ${finalTotal.toLocaleString()}원 <br>
+                <span class="text-xs text-gray-400 font-normal">${feeText}</span>
+            `;
 
             const impact = (qty / VIRTUAL_MARKET_DEPTH) * 100;
             document.getElementById('market-impact').innerText = impact.toFixed(2) + "%";
@@ -722,11 +745,14 @@
                 document.getElementById('available-asset').innerText = "보유: " + myHolding.quantity + "주";
             }
         }
-
+        
+        // [수정] 최대 수량 계산 시에도 수수료 고려
         window.setMaxQty = () => {
             const stock = marketData[tradeState.code];
             if (tradeState.type === 'buy') {
-                document.getElementById('trade-qty').value = Math.floor(userPortfolio.cash / stock.price);
+                // 수수료를 포함해서 살 수 있는 최대 개수 계산: 현금 / (가격 * 1.0015)
+                const maxBuyable = Math.floor(userPortfolio.cash / (stock.price * (1 + FEE_RATES.buy)));
+                document.getElementById('trade-qty').value = maxBuyable;
             } else {
                 const holdings = userPortfolio.holdings || {};
                 const holding = holdings[tradeState.code] || { quantity: 0 };
@@ -734,7 +760,6 @@
             }
             updateModalUI();
         }
-
         window.closeModal = () => document.getElementById('trade-modal').classList.add('hidden');
 
         window.executeOrder = async () => {
@@ -760,33 +785,48 @@
 
                     const stock = marketState.stocks[code];
                     const currentPrice = stock.price;
-                    const totalCost = currentPrice * qty;
+                    
+                    // [핵심 수정] 수수료 적용
+                    const rawAmount = currentPrice * qty;
+                    let finalAmount = 0;
 
                     let newHoldings = { ...userData.holdings };
                     let newCash = userData.cash;
                     let stockHolding = newHoldings[code] ? { ...newHoldings[code] } : { quantity: 0, avgPrice: 0 };
 
                     if (tradeState.type === 'buy') {
-                        if (newCash < totalCost) throw "잔액 부족";
-                        newCash -= totalCost;
+                        // 매수: 가격 + 수수료(0.15%)
+                        const fee = Math.floor(rawAmount * FEE_RATES.buy);
+                        finalAmount = rawAmount + fee;
+
+                        if (newCash < finalAmount) throw "잔액 부족 (수수료 포함)";
+                        
+                        newCash -= finalAmount;
                         const newQty = stockHolding.quantity + qty;
-                        stockHolding.avgPrice = Math.round(((stockHolding.quantity * stockHolding.avgPrice) + totalCost) / newQty);
+                        
+                        // 평단가는 수수료 포함된 금액으로 계산하는 것이 현실적
+                        stockHolding.avgPrice = Math.round(((stockHolding.quantity * stockHolding.avgPrice) + finalAmount) / newQty);
                         stockHolding.quantity = newQty;
                         newHoldings[code] = stockHolding;
                     } else {
+                        // 매도: 가격 - 수수료/세금(0.3%)
                         if (stockHolding.quantity < qty) throw "주식 부족";
-                        newCash += totalCost;
+                        
+                        const fee = Math.floor(rawAmount * FEE_RATES.sell);
+                        finalAmount = rawAmount - fee;
+
+                        newCash += finalAmount;
                         stockHolding.quantity -= qty;
                         if (stockHolding.quantity === 0) delete newHoldings[code];
                         else newHoldings[code] = stockHolding;
                     }
 
+                    // 시장 가격 변동 로직 (그대로 유지)
                     const direction = tradeState.type === 'buy' ? 1 : -1;
                     const priceImpactPct = (qty / VIRTUAL_MARKET_DEPTH) * direction;
                     let newMarketPrice = Math.round(currentPrice * (1 + priceImpactPct));
                     if (newMarketPrice < 1) newMarketPrice = 1;
 
-                    // 차트 데이터 갱신
                     let history = stock.history || [];
                     history.push(newMarketPrice);
                     if (history.length > 30) history.shift();
