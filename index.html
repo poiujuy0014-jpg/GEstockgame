@@ -3,18 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>대건고 주식 모의투자 (V4 - Realtime Logic)</title>
+    <title>대건고 주식 모의투자 (V5 - Ranking & Admin)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
         body { font-family: 'Noto Sans KR', sans-serif; background-color: #f3f4f6; }
         .market-open { color: #16a34a; font-weight: 700; }
         .market-closed { color: #dc2626; font-weight: 700; }
-        .price-up { color: #dc2626; } /* 한국장: 상승=빨강 */
-        .price-down { color: #2563eb; } /* 한국장: 하락=파랑 */
+        .price-up { color: #dc2626; } 
+        .price-down { color: #2563eb; } 
         .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .news-flash { animation: flash 2s infinite; }
-        @keyframes flash { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        .gold-rank { background: linear-gradient(135deg, #ffd700 0%, #fdb931 100%); color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+        .silver-rank { background: linear-gradient(135deg, #e0e0e0 0%, #bdbdbd 100%); color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+        .bronze-rank { background: linear-gradient(135deg, #cd7f32 0%, #a0522d 100%); color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
     </style>
 </head>
 <body class="text-gray-800">
@@ -23,7 +24,7 @@
         <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border border-gray-100">
             <div class="text-center mb-8">
                 <h1 class="text-3xl font-bold text-indigo-700 mb-2">📈 대건고 주식 모의투자</h1>
-                <p class="text-gray-500 text-sm">실시간 뉴스 & 유동성 반영 시스템</p>
+                <p class="text-gray-500 text-sm">실시간 랭킹 & 유동성 시스템</p>
             </div>
             
             <form id="login-form" class="space-y-5" onsubmit="return false;">
@@ -68,7 +69,7 @@
 
         <main class="flex-grow max-w-7xl mx-auto w-full p-4 grid grid-cols-1 lg:grid-cols-12 gap-6">
             
-            <section class="lg:col-span-4 space-y-6">
+            <section class="lg:col-span-4 space-y-4">
                 <div class="bg-white rounded-xl shadow-lg p-6 border-t-4 border-indigo-500">
                     <h2 class="text-lg font-bold text-gray-700 mb-4">내 자산 현황</h2>
                     <div class="space-y-4">
@@ -87,8 +88,18 @@
                     </div>
                 </div>
 
-                <div class="bg-white rounded-xl shadow p-6 h-[500px] flex flex-col">
-                    <h2 class="text-lg font-bold text-gray-700 mb-4">보유 종목</h2>
+                <div class="bg-white rounded-xl shadow p-5">
+                    <div class="flex justify-between items-center mb-3 border-b pb-2">
+                        <h2 class="text-lg font-bold text-gray-700">🏆 실시간 부자 랭킹</h2>
+                        <span class="text-xs text-gray-400">자산순</span>
+                    </div>
+                    <div id="ranking-list" class="space-y-2">
+                        <div class="text-center text-xs text-gray-400 py-2">랭킹 집계 중...</div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow p-6 h-[350px] flex flex-col">
+                    <h2 class="text-lg font-bold text-gray-700 mb-4">내 포트폴리오</h2>
                     <div id="portfolio-list" class="flex-grow overflow-y-auto space-y-2 pr-2 scrollbar-hide">
                         <div class="text-center text-gray-400 py-10">보유 중인 주식이 없습니다.</div>
                     </div>
@@ -106,13 +117,13 @@
                     </div>
                 </div>
 
-                <div class="bg-white rounded-xl shadow-lg p-5 max-h-60 overflow-y-auto">
+                <div class="bg-white rounded-xl shadow-lg p-5 max-h-52 overflow-y-auto">
                     <h2 class="text-lg font-bold text-gray-700 mb-3 border-b pb-2">📰 시장 뉴스</h2>
                     <div id="news-feed-list" class="space-y-2 text-sm">
                         </div>
                 </div>
 
-                <div class="bg-white rounded-xl shadow-lg flex flex-col h-[500px]">
+                <div class="bg-white rounded-xl shadow-lg flex flex-col h-[550px]">
                     <div class="p-4 border-b flex justify-between items-center bg-gray-50 rounded-t-xl">
                         <h2 class="text-lg font-bold text-gray-700">KOSPI 주요 종목 (37개)</h2>
                         <span class="text-xs text-gray-500">* 실시간 변동</span>
@@ -131,12 +142,15 @@
             </section>
         </main>
 
-        <div id="admin-panel" class="hidden fixed bottom-4 right-4 bg-gray-900 text-white p-4 rounded-xl shadow-2xl z-50 opacity-90 hover:opacity-100 transition border-2 border-yellow-500">
-            <h3 class="font-bold text-yellow-400 mb-2">👑 관리자(김태준) 패널</h3>
+        <div id="admin-panel" class="hidden fixed bottom-4 right-4 bg-gray-900 text-white p-4 rounded-xl shadow-2xl z-50 opacity-90 hover:opacity-100 transition border-2 border-yellow-500 w-48">
+            <h3 class="font-bold text-yellow-400 mb-3 text-center">👑 관리자 패널</h3>
             <div class="space-y-2 text-xs">
-                <button onclick="adminFunc('start')" class="w-full bg-green-600 hover:bg-green-700 py-2 rounded">시뮬레이션 시작</button>
-                <button onclick="adminFunc('nextDay')" class="w-full bg-blue-600 hover:bg-blue-700 py-2 rounded">다음 날로 이동</button>
-                <button onclick="adminFunc('reset')" class="w-full bg-red-600 hover:bg-red-700 py-2 rounded font-bold"> 데이터 전체 초기화</button>
+                <button onclick="adminFunc('start')" class="w-full bg-green-600 hover:bg-green-700 py-3 rounded font-bold">▶ 시장 시작</button>
+                <button onclick="adminFunc('stop')" class="w-full bg-gray-600 hover:bg-gray-700 py-3 rounded font-bold">⏸ 시장 일시정지</button>
+                <button onclick="adminFunc('close')" class="w-full bg-red-600 hover:bg-red-700 py-3 rounded font-bold">⛔ 장 마감 (종료)</button>
+                <div class="h-2"></div>
+                <button onclick="adminFunc('nextDay')" class="w-full bg-blue-600 hover:bg-blue-700 py-2 rounded">📅 다음 날로 이동</button>
+                <button onclick="adminFunc('reset')" class="w-full bg-black border border-red-500 text-red-500 hover:bg-red-900 py-2 rounded">⚠️ 전체 초기화</button>
             </div>
         </div>
     </div>
@@ -192,7 +206,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot, runTransaction, serverTimestamp, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot, runTransaction, serverTimestamp, increment, collection, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // 1. 설정
         const manualConfig = {
@@ -218,22 +232,17 @@
             document.getElementById('db-status').className = "mt-2 font-bold text-red-500";
         }
 
-        // [핵심] 가상 유동성 상수 (Virtual Market Depth)
-        // 이 수량이 클수록 유저 거래에 의한 주가 변동폭이 작아집니다.
-        // 예: 50,000주 설정 시 -> 유저가 500주 사면 주가 1% 상승
         const VIRTUAL_MARKET_DEPTH = 50000; 
-
-        // 관리자 이메일
         const ADMIN_EMAIL = "poiujuy0014@pess.cnehs.kr";
 
-        // 사용자 명단 (로그인 확인용)
+        // 사용자 명단
         const USERS_DB = [
             { name: "하미경", email: "mk3324@pess.cnehs.kr" },
             { name: "김태준", email: "poiujuy0014@pess.cnehs.kr" }, // 관리자
             { name: "강은성", email: "rkd2022@pess.cnehs.kr" },
         ];
 
-        // 37개 종목 초기 데이터
+        // 37개 종목 초기 데이터 (생략 없이 사용)
         const INITIAL_STOCKS = [
             { code: "005930", name: "삼성전자", sector: "IT", price: 72500 }, { code: "000660", name: "SK하이닉스", sector: "IT", price: 132000 },
             { code: "035420", name: "NAVER", sector: "Platform", price: 205000 }, { code: "035720", name: "카카오", sector: "Platform", price: 54000 },
@@ -256,7 +265,6 @@
             { code: "122870", name: "YG PLUS", sector: "Enter", price: 5500 }
         ];
 
-        // [개선] 뉴스 템플릿 - 시장(Market) 및 섹터 뉴스 추가
         const NEWS_TEMPLATES = {
             'Market': [
                 { text: "미국 연준, 기준금리 동결 발표... 시장 안도 랠리", type: "good", impact: 0.03 },
@@ -264,7 +272,6 @@
                 { text: "정부, 대규모 부양책 발표 임박설에 시장 기대감", type: "good", impact: 0.02 },
                 { text: "환율 급등으로 외국인 매도세... 시장 전반 약세", type: "bad", impact: -0.02 }
             ],
-            // 기존 섹터 뉴스 유지...
             'IT': [
                 { text: "{name}, 차세대 AI 반도체 개발 성공 발표", type: "good", impact: 0.06 },
                 { text: "{name}, 글로벌 IT 수요 둔화로 실적 부진 예상", type: "bad", impact: -0.05 },
@@ -299,6 +306,7 @@
         let userPortfolio = { cash: 50000000, holdings: {} };
         let tradeState = { type: 'buy', code: null };
         let gameState = { day: 1, isOpen: false, gameVersion: 0 }; 
+        let allUsersCache = []; // 랭킹용
 
         // --- 인증 로직 ---
         async function login(e) {
@@ -336,6 +344,7 @@
                 document.getElementById('game-screen').classList.remove('hidden');
                 setupUI();
                 startRealtimeSync();
+                subscribeToRankings(); // 랭킹 구독 시작
             } catch (err) {
                 console.error(err);
                 document.getElementById('login-msg').textContent = "로그인 오류: " + err.message;
@@ -353,7 +362,7 @@
                     marketData = data.stocks || {};
                     gameState = { day: data.day || 1, isOpen: data.isOpen, gameVersion: data.gameVersion || 1 };
                     await checkAndResetUserData(gameState.gameVersion);
-                    updateMarketUI();
+                    updateMarketUI(); // 여기서 랭킹도 같이 업데이트
                 } else if (currentUser.role === 'admin') {
                     initMarketData();
                 }
@@ -373,6 +382,66 @@
                 if (doc.exists()) {
                     updateNewsUI(doc.data().items || []);
                 }
+            });
+        }
+        
+        // --- 랭킹 시스템 (모든 유저 구독) ---
+        function subscribeToRankings() {
+            const q = query(collection(db, `artifacts/${appId}/users`));
+            onSnapshot(q, (snapshot) => {
+                allUsersCache = [];
+                snapshot.forEach(doc => {
+                    allUsersCache.push(doc.data());
+                });
+                renderRankings(); // 유저 정보 변경 시 갱신
+            });
+        }
+
+        function renderRankings() {
+            const listEl = document.getElementById('ranking-list');
+            
+            // 아직 시장 데이터가 없으면 대기
+            if (Object.keys(marketData).length === 0 || allUsersCache.length === 0) return;
+
+            // 각 유저의 총 평가 자산 계산
+            const rankedUsers = allUsersCache.map(user => {
+                let stockVal = 0;
+                if (user.holdings) {
+                    Object.keys(user.holdings).forEach(code => {
+                        const price = marketData[code]?.price || 0;
+                        stockVal += user.holdings[code].quantity * price;
+                    });
+                }
+                return {
+                    name: user.name,
+                    total: (user.cash || 0) + stockVal,
+                    role: user.role
+                };
+            });
+
+            // 자산순 정렬 (내림차순)
+            rankedUsers.sort((a, b) => b.total - a.total);
+
+            listEl.innerHTML = '';
+            rankedUsers.slice(0, 10).forEach((u, index) => { // Top 10만 표시
+                const rank = index + 1;
+                let rankClass = "bg-gray-100 text-gray-600";
+                if(rank === 1) rankClass = "gold-rank font-bold";
+                else if(rank === 2) rankClass = "silver-rank font-bold";
+                else if(rank === 3) rankClass = "bronze-rank font-bold";
+
+                const isMe = (u.name === currentUser.name) ? "border-2 border-indigo-500" : "";
+                
+                const div = document.createElement('div');
+                div.className = `flex justify-between items-center p-2 rounded-lg text-sm ${isMe} ${index < 3 ? 'bg-opacity-90' : 'bg-gray-50'}`;
+                div.innerHTML = `
+                    <div class="flex items-center space-x-2">
+                        <span class="w-6 h-6 flex items-center justify-center rounded-full text-xs ${rankClass}">${rank}</span>
+                        <span class="font-medium text-gray-800">${u.name}</span>
+                    </div>
+                    <span class="font-bold text-gray-600">${Math.round(u.total).toLocaleString()}</span>
+                `;
+                listEl.appendChild(div);
             });
         }
 
@@ -396,9 +465,16 @@
         window.adminFunc = async (action) => {
             if (currentUser.role !== 'admin') { alert("권한이 없습니다."); return; }
             const marketRef = doc(db, `artifacts/${appId}/public/market_state`);
+            
             if (action === 'start') {
-                await updateDoc(marketRef, { day: 1, isOpen: true });
+                await updateDoc(marketRef, { isOpen: true });
                 startAutoSimulation(); 
+                alert("시장이 시작되었습니다!");
+            } else if (action === 'stop' || action === 'close') {
+                // [수정] 장 중단/마감 로직
+                await updateDoc(marketRef, { isOpen: false });
+                if (simInterval) clearInterval(simInterval);
+                alert("장이 마감되었습니다.");
             } else if (action === 'nextDay') {
                 await updateDoc(marketRef, { day: gameState.day + 1, isOpen: true });
             } else if (action === 'reset') {
@@ -434,20 +510,20 @@
             }, { merge: true });
         }
 
-        // --- [핵심 수정] 시뮬레이션 및 뉴스 로직 ---
         let simInterval;
         function startAutoSimulation() {
             if (simInterval) clearInterval(simInterval);
             
-            // 4초마다 실행
             simInterval = setInterval(async () => {
-                if (!gameState.isOpen) return;
+                // 관리자가 끄거나 DB에서 isOpen이 false면 중단
+                if (!gameState.isOpen) {
+                    clearInterval(simInterval);
+                    return;
+                }
 
                 const updates = {};
                 let newsEvents = [];
 
-                // 1. 전체적으로 뉴스가 뜰 확률 (5% 확률로 발생 - 희소성)
-                // 뉴스가 너무 많이 뜨는 것을 방지하기 위해 Global Check 사용
                 const triggerNews = Math.random() < 0.05; 
                 let affectedStocks = [];
                 let newsImpactVal = 0;
@@ -455,41 +531,32 @@
                 let newsType = "";
 
                 if (triggerNews) {
-                    // 뉴스 타겟 결정: 0=전체(Market), 1=섹터, 2=개별(Single)
                     const scopeRand = Math.random();
-                    
                     if (scopeRand < 0.2) { 
-                        // [시장 전체 뉴스]
                         const templates = NEWS_TEMPLATES['Market'];
                         const tmpl = templates[Math.floor(Math.random() * templates.length)];
                         newsText = tmpl.text;
                         newsType = tmpl.type;
                         newsImpactVal = tmpl.impact;
-                        affectedStocks = Object.keys(marketData); // 모든 종목
+                        affectedStocks = Object.keys(marketData); 
                     } 
                     else if (scopeRand < 0.5) { 
-                        // [섹터 뉴스]
                         const codes = Object.keys(marketData);
                         const randomStock = marketData[codes[Math.floor(Math.random() * codes.length)]];
                         const sector = randomStock.sector;
                         const templates = NEWS_TEMPLATES[sector] || NEWS_TEMPLATES['Default'];
                         const tmpl = templates[Math.floor(Math.random() * templates.length)];
-                        
                         newsText = `[${sector}] ` + tmpl.text.replace("{name}", sector + " 업계");
                         newsType = tmpl.type;
                         newsImpactVal = tmpl.impact;
-                        
-                        // 해당 섹터 종목들만 필터링
                         affectedStocks = codes.filter(c => marketData[c].sector === sector);
                     } 
                     else { 
-                        // [개별 종목 뉴스]
                         const codes = Object.keys(marketData);
                         const targetCode = codes[Math.floor(Math.random() * codes.length)];
                         const targetStock = marketData[targetCode];
                         const templates = NEWS_TEMPLATES[targetStock.sector] || NEWS_TEMPLATES['Default'];
                         const tmpl = templates[Math.floor(Math.random() * templates.length)];
-                        
                         newsText = tmpl.text.replace("{name}", targetStock.name);
                         newsType = tmpl.type;
                         newsImpactVal = tmpl.impact;
@@ -497,56 +564,44 @@
                     }
                 }
 
-                // 2. 주가 변동 적용 (기본 랜덤 + 뉴스 임팩트)
                 Object.keys(marketData).forEach(code => {
                     const stock = marketData[code];
-                    
-                    // 기본 자연 변동 (랜덤 워크) - 아주 미세하게 (-0.5% ~ +0.5%)
                     let changePct = (Math.random() * 0.01) - 0.005;
 
-                    // 뉴스 영향이 있는 종목이면 임팩트 추가
                     if (affectedStocks.includes(code)) {
-                        // 뉴스 임팩트에 약간의 랜덤성 부여 (0.8 ~ 1.2배)
                         const realImpact = newsImpactVal * (0.8 + Math.random() * 0.4);
                         changePct += realImpact;
                     }
 
                     let newPrice = Math.round(stock.price * (1 + changePct));
-                    
-                    // 가격 갱신 준비
                     updates[`stocks.${code}.price`] = newPrice;
                     updates[`stocks.${code}.change`] = newPrice - stock.basePrice;
                     updates[`stocks.${code}.rate`] = ((newPrice - stock.basePrice) / stock.basePrice) * 100;
                 });
 
-                // 3. DB 업데이트
                 const marketRef = doc(db, `artifacts/${appId}/public/market_state`);
                 await updateDoc(marketRef, updates);
 
-                // 4. 뉴스가 발생했다면 뉴스 DB에도 추가
                 if (triggerNews) {
                     const newsRef = doc(db, `artifacts/${appId}/public/news`);
                     const snap = await getDoc(newsRef);
                     let currentNews = snap.exists() ? snap.data().items : [];
                     
-                    // 중복 방지 (같은 텍스트면 스킵)
                     if (currentNews.length === 0 || currentNews[0].text !== newsText) {
                         const newEvent = {
                             time: new Date().toLocaleTimeString('ko-KR', {hour:'2-digit', minute:'2-digit'}),
                             text: newsText,
                             type: newsType
                         };
-                        const newNewsList = [newEvent, ...currentNews].slice(0, 20); // 최근 20개 유지
+                        const newNewsList = [newEvent, ...currentNews].slice(0, 20); 
                         await updateDoc(newsRef, { items: newNewsList });
                     }
                 }
-
-            }, 4000); // 4초 주기
+            }, 4000); 
         }
 
-        // --- 거래 로직 (유저가 시장에 영향 주기) ---
         window.openTradeModal = (code) => {
-            if (!gameState.isOpen) return alert("장이 마감되었습니다.");
+            if (!gameState.isOpen) return alert("현재 장이 마감되었습니다. 거래할 수 없습니다.");
             tradeState.code = code;
             tradeState.type = 'buy';
             document.getElementById('modal-stock-name').innerText = marketData[code].name;
@@ -586,8 +641,6 @@
             document.getElementById('modal-price').innerText = price.toLocaleString();
             document.getElementById('trade-total').innerText = total.toLocaleString() + "원";
 
-            // 가상 유동성 기반 시장 영향도 계산
-            // 공식: (주문수량 / 가상유동성) * 100
             const impact = (qty / VIRTUAL_MARKET_DEPTH) * 100;
             document.getElementById('market-impact').innerText = impact.toFixed(2) + "%";
             document.getElementById('market-impact').className = impact > 1.0 ? "text-red-500 font-bold ml-2" : "text-gray-400 ml-2";
@@ -616,8 +669,8 @@
 
         window.closeModal = () => document.getElementById('trade-modal').classList.add('hidden');
 
-        // [핵심 수정] 매수/매도 실행 + 시장 가격 변동 반영
         window.executeOrder = async () => {
+            if (!gameState.isOpen) return alert("장이 마감되어 주문할 수 없습니다.");
             const qty = parseInt(document.getElementById('trade-qty').value);
             if (qty <= 0) return alert("수량을 입력하세요.");
             
@@ -634,6 +687,9 @@
 
                     const marketState = marketDoc.data();
                     const userData = userDoc.data();
+                    
+                    if (!marketState.isOpen) throw "Market Closed";
+
                     const stock = marketState.stocks[code];
                     const currentPrice = stock.price;
                     const totalCost = currentPrice * qty;
@@ -642,7 +698,6 @@
                     let newCash = userData.cash;
                     let stockHolding = newHoldings[code] ? { ...newHoldings[code] } : { quantity: 0, avgPrice: 0 };
 
-                    // 1. 유저 자산 처리
                     if (tradeState.type === 'buy') {
                         if (newCash < totalCost) throw "잔액 부족";
                         newCash -= totalCost;
@@ -658,21 +713,13 @@
                         else newHoldings[code] = stockHolding;
                     }
 
-                    // 2. [핵심] 시장 가격 변동 처리 (가상 유동성 반영)
-                    // 매수 시 가격 상승, 매도 시 가격 하락
-                    // 변동률 = (주문량 / 가상유동성)
-                    // 예: 500주 주문 / 50000주 유동성 = 0.01 (1% 변동)
                     const direction = tradeState.type === 'buy' ? 1 : -1;
                     const priceImpactPct = (qty / VIRTUAL_MARKET_DEPTH) * direction;
                     let newMarketPrice = Math.round(currentPrice * (1 + priceImpactPct));
-                    
-                    // 가격이 1원 이하로 떨어지지 않게 방지
                     if (newMarketPrice < 1) newMarketPrice = 1;
 
-                    // 3. 트랜잭션 업데이트
                     transaction.update(userRef, { cash: newCash, holdings: newHoldings });
                     
-                    // 시장가 업데이트 (경로 문자열 생성)
                     const updates = {};
                     updates[`stocks.${code}.price`] = newMarketPrice;
                     updates[`stocks.${code}.change`] = newMarketPrice - stock.basePrice;
@@ -688,10 +735,9 @@
             }
         };
 
-        // --- 화면 업데이트 (UI) ---
         function setupUI() {
             document.getElementById('user-name-display').innerText = currentUser.name;
-            document.getElementById('user-role-display').innerText = currentUser.role === 'admin' ? '관리자(선생님)' : '학생';
+            document.getElementById('user-role-display').innerText = currentUser.role === 'admin' ? '관리자' : '투자자';
             if (currentUser.role === 'admin') document.getElementById('admin-panel').classList.remove('hidden');
         }
 
@@ -726,6 +772,9 @@
                 `;
                 listEl.appendChild(div);
             });
+
+            // 주가가 변하면 랭킹도 갱신
+            renderRankings();
         }
 
         function updatePortfolioUI() {
