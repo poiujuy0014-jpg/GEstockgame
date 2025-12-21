@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>대건고 주식 모의투자 (V6 - Chart & Info)</title>
+    <title>대건고 주식 모의투자 (V9 - Toast Notification)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -17,15 +17,29 @@
         .gold-rank { background: linear-gradient(135deg, #ffd700 0%, #fdb931 100%); color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
         .silver-rank { background: linear-gradient(135deg, #e0e0e0 0%, #bdbdbd 100%); color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
         .bronze-rank { background: linear-gradient(135deg, #cd7f32 0%, #a0522d 100%); color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+        
+        /* 토스트 애니메이션 */
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+        .toast-enter { animation: slideIn 0.3s ease-out forwards; }
+        .toast-exit { animation: fadeOut 0.3s ease-in forwards; }
     </style>
 </head>
 <body class="text-gray-800">
+
+    <div id="toast-container" class="fixed top-5 right-5 z-[100] flex flex-col space-y-3 w-80 pointer-events-none"></div>
 
     <div id="login-screen" class="min-h-screen flex items-center justify-center p-4">
         <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border border-gray-100">
             <div class="text-center mb-8">
                 <h1 class="text-3xl font-bold text-indigo-700 mb-2">📈 대건고 주식 모의투자</h1>
-                <p class="text-gray-500 text-sm">실시간 차트 & 랭킹 시스템</p>
+                <p class="text-gray-500 text-sm">안정적 시장 시스템 & UX 개선</p>
             </div>
             
             <form id="login-form" class="space-y-5" onsubmit="return false;">
@@ -61,7 +75,7 @@
                 <div class="flex items-center space-x-4">
                     <div class="text-right">
                         <p id="user-name-display" class="text-sm font-bold text-gray-800">사용자</p>
-                        <p id="user-role-display" class="text-xs text-gray-500">학생</p>
+                        <p id="user-role-display" class="text-xs text-gray-500">투자자</p>
                     </div>
                     <button onclick="logout()" class="text-xs text-gray-400 hover:text-red-500 underline">로그아웃</button>
                 </div>
@@ -174,7 +188,7 @@
 
                 <div class="bg-indigo-50 p-3 rounded-lg mb-6 text-sm text-indigo-800">
                     <span class="font-bold">📢 기업 정보:</span>
-                    <span id="modal-desc">대한민국을 대표하는 글로벌 기업입니다.</span>
+                    <span id="modal-desc">정보 로딩 중...</span>
                 </div>
 
                 <div class="flex items-center justify-between mb-4">
@@ -198,13 +212,12 @@
                     
                     <div class="flex justify-between text-sm">
                         <span class="text-gray-500">주문 총액</span>
-                        <span id="trade-total" class="font-bold">0원</span>
+                        <div id="trade-total" class="text-right">0원</div>
                     </div>
                     <div class="flex justify-between text-xs text-gray-400">
                         <span>가용 자산/보유</span>
                         <span id="available-asset">0원</span>
                     </div>
-                    
                 </div>
 
                 <button id="btn-execute" onclick="executeOrder()" class="w-full mt-6 bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg shadow transition">
@@ -219,7 +232,6 @@
         import { getAuth, signInAnonymously, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot, runTransaction, serverTimestamp, increment, collection, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // 1. 설정
         const manualConfig = {
             apiKey: "AIzaSyDrhxV67EB2a9ZsKOs6XCMDPCaPJorgEyw",
             authDomain: "ge-stock-project.firebaseapp.com",
@@ -244,6 +256,7 @@
         }
 
         const VIRTUAL_MARKET_DEPTH = 500000; 
+        const FEE_RATES = { buy: 0.0015, sell: 0.003 };
         const ADMIN_EMAIL = "poiujuy0014@pess.cnehs.kr";
 
         const USERS_DB = [
@@ -252,7 +265,6 @@
             { name: "강은성", email: "rkd2022@pess.cnehs.kr" },
         ];
 
-        // 37개 종목 초기 데이터 (고정 리스트용)
         const INITIAL_STOCKS = [
             { code: "005930", name: "삼성전자", sector: "IT", price: 72500 }, { code: "000660", name: "SK하이닉스", sector: "IT", price: 132000 },
             { code: "035420", name: "NAVER", sector: "Platform", price: 205000 }, { code: "035720", name: "카카오", sector: "Platform", price: 54000 },
@@ -317,9 +329,42 @@
         let tradeState = { type: 'buy', code: null };
         let gameState = { day: 1, isOpen: false, gameVersion: 0 }; 
         let allUsersCache = [];
-        let chartInstance = null; // 차트 객체 저장용
+        let chartInstance = null;
 
-        // --- 인증 로직 ---
+        // [NEW] Toast Notification Function
+        window.showToast = (message, type = 'info') => {
+            const container = document.getElementById('toast-container');
+            const el = document.createElement('div');
+            
+            // 색상 설정
+            let bgClass = "bg-blue-600";
+            if(type === 'success') bgClass = "bg-green-600";
+            if(type === 'error') bgClass = "bg-red-600";
+            if(type === 'warning') bgClass = "bg-orange-500";
+
+            el.className = `toast-enter transform transition-all duration-300 pointer-events-auto flex items-center p-4 rounded-lg shadow-lg text-white ${bgClass}`;
+            
+            // 아이콘 선택
+            let icon = "ℹ️";
+            if(type === 'success') icon = "✅";
+            if(type === 'error') icon = "⚠️";
+            if(type === 'warning') icon = "🔔";
+
+            el.innerHTML = `
+                <span class="text-xl mr-3">${icon}</span>
+                <span class="font-medium text-sm">${message}</span>
+            `;
+
+            container.appendChild(el);
+
+            // 3초 후 삭제
+            setTimeout(() => {
+                el.classList.remove('toast-enter');
+                el.classList.add('toast-exit');
+                setTimeout(() => el.remove(), 300);
+            }, 3000);
+        };
+
         async function login(e) {
             e.preventDefault(); 
             const name = document.getElementById('login-name').value.trim();
@@ -356,6 +401,7 @@
                 setupUI();
                 startRealtimeSync();
                 subscribeToRankings();
+                showToast(`환영합니다, ${name}님!`, 'success');
             } catch (err) {
                 console.error(err);
                 document.getElementById('login-msg').textContent = "로그인 오류: " + err.message;
@@ -364,7 +410,6 @@
 
         window.logout = () => { auth.signOut(); location.reload(); };
 
-        // --- 실시간 동기화 ---
         function startRealtimeSync() {
             const marketRef = doc(db, `artifacts/${appId}/public/market_state`);
             onSnapshot(marketRef, async (docSnap) => {
@@ -462,28 +507,28 @@
                         cash: 50000000, holdings: {}, transactions: [],
                         totalAssets: 50000000, dataVersion: globalVersion, lastUpdate: serverTimestamp()
                     });
-                    alert("새로운 게임이 시작되어 자산이 초기화되었습니다.");
+                    showToast("새 게임 시작! 자산이 초기화되었습니다.", 'warning');
                 }
             }
         }
 
-        // --- 관리자 기능 ---
         window.adminFunc = async (action) => {
-            if (currentUser.role !== 'admin') { alert("권한이 없습니다."); return; }
+            if (currentUser.role !== 'admin') { showToast("권한이 없습니다.", 'error'); return; }
             const marketRef = doc(db, `artifacts/${appId}/public/market_state`);
             
             if (action === 'start') {
                 await updateDoc(marketRef, { isOpen: true });
                 startAutoSimulation(); 
-                alert("시장이 시작되었습니다!");
+                showToast("시장이 시작되었습니다!", 'success');
             } else if (action === 'stop' || action === 'close') {
                 await updateDoc(marketRef, { isOpen: false });
                 if (simInterval) clearInterval(simInterval);
-                alert("장이 마감되었습니다.");
+                showToast("장이 마감되었습니다.", 'info');
             } else if (action === 'nextDay') {
                 await updateDoc(marketRef, { day: gameState.day + 1, isOpen: true });
+                showToast("다음 날로 이동합니다.", 'info');
             } else if (action === 'reset') {
-                if(confirm("정말 초기화하시겠습니까?")) await resetGameGlobal();
+                if(confirm("정말 초기화하시겠습니까? (이 작업은 되돌릴 수 없습니다)")) await resetGameGlobal();
             }
         };
 
@@ -493,14 +538,14 @@
                 initialData[s.code] = {
                     name: s.name, price: s.price, basePrice: s.price,
                     change: 0, rate: 0, sector: s.sector,
-                    history: [s.price] // 차트 데이터 초기화
+                    history: [s.price]
                 };
             });
             await setDoc(doc(db, `artifacts/${appId}/public/market_state`), {
                 day: 1, isOpen: false, stocks: initialData, gameVersion: increment(1) 
             }, { merge: true });
             setDoc(doc(db, `artifacts/${appId}/public/news`), { items: [] });
-            alert("초기화 완료.");
+            showToast("전체 데이터 초기화 완료.", 'warning');
         }
 
         async function initMarketData() {
@@ -576,7 +621,6 @@
 
                     let newPrice = Math.round(stock.price * (1 + changePct));
                     
-                    // [차트용 데이터 저장] 최근 30개 유지
                     let history = stock.history || [];
                     history.push(newPrice);
                     if (history.length > 30) history.shift();
@@ -608,9 +652,11 @@
             }, 4000); 
         }
 
-        // --- 차트 및 모달 로직 ---
         window.openTradeModal = (code) => {
-            if (!gameState.isOpen) return alert("현재 장이 마감되었습니다. 거래할 수 없습니다.");
+            if (!gameState.isOpen) {
+                showToast("현재 장이 마감되었습니다. 거래할 수 없습니다.", 'error');
+                return;
+            }
             
             const stock = marketData[code];
             tradeState.code = code;
@@ -625,7 +671,6 @@
             updateModalUI();
             document.getElementById('trade-modal').classList.remove('hidden');
 
-            // 차트 렌더링
             renderChart(stock.history || [stock.price], stock.name);
         };
 
@@ -659,7 +704,7 @@
                         borderWidth: 2,
                         tension: 0.3,
                         fill: true,
-                        pointRadius: 0 // 포인트 숨김
+                        pointRadius: 0 
                     }]
                 },
                 options: {
@@ -672,7 +717,7 @@
                             grid: { display: true, color: '#f3f4f6' }
                         }
                     },
-                    animation: { duration: 0 } // 깜빡임 방지
+                    animation: { duration: 0 }
                 }
             });
         }
@@ -696,9 +741,6 @@
             updateModalUI();
         };
 
-      // 수수료율 상수 정의 (매수 0.15%, 매도 0.3%)
-        const FEE_RATES = { buy: 0.0015, sell: 0.003 }; 
-
         window.calcTotal = () => updateModalUI();
 
         function updateModalUI() {
@@ -706,8 +748,7 @@
             const price = stock.price;
             const qty = parseInt(document.getElementById('trade-qty').value) || 0;
             
-            // [수정] 수수료 계산 로직 추가
-            const rawTotal = price * qty; // 순수 주식 가격
+            const rawTotal = price * qty;
             const feeRate = tradeState.type === 'buy' ? FEE_RATES.buy : FEE_RATES.sell;
             const fee = Math.floor(rawTotal * feeRate);
             
@@ -715,22 +756,18 @@
             let feeText = "";
 
             if (tradeState.type === 'buy') {
-                finalTotal = rawTotal + fee; // 살 때는 돈을 더 냄
+                finalTotal = rawTotal + fee;
                 feeText = `(수수료 ${fee.toLocaleString()}원 포함)`;
             } else {
-                finalTotal = rawTotal - fee; // 팔 때는 돈을 떼임
+                finalTotal = rawTotal - fee;
                 feeText = `(세금/수수료 ${fee.toLocaleString()}원 차감)`;
             }
             
             document.getElementById('modal-price').innerText = price.toLocaleString();
-            
-            // 금액 표시 부분 개선
             document.getElementById('trade-total').innerHTML = `
                 ${finalTotal.toLocaleString()}원 <br>
                 <span class="text-xs text-gray-400 font-normal">${feeText}</span>
             `;
-
-           
 
             const holdings = userPortfolio.holdings || {};
             const myHolding = holdings[tradeState.code] || { quantity: 0 };
@@ -741,12 +778,10 @@
                 document.getElementById('available-asset').innerText = "보유: " + myHolding.quantity + "주";
             }
         }
-        
-        // [수정] 최대 수량 계산 시에도 수수료 고려
+
         window.setMaxQty = () => {
             const stock = marketData[tradeState.code];
             if (tradeState.type === 'buy') {
-                // 수수료를 포함해서 살 수 있는 최대 개수 계산: 현금 / (가격 * 1.0015)
                 const maxBuyable = Math.floor(userPortfolio.cash / (stock.price * (1 + FEE_RATES.buy)));
                 document.getElementById('trade-qty').value = maxBuyable;
             } else {
@@ -756,12 +791,19 @@
             }
             updateModalUI();
         }
+
         window.closeModal = () => document.getElementById('trade-modal').classList.add('hidden');
 
         window.executeOrder = async () => {
-            if (!gameState.isOpen) return alert("장이 마감되어 주문할 수 없습니다.");
+            if (!gameState.isOpen) {
+                showToast("장이 마감되어 주문할 수 없습니다.", 'error');
+                return;
+            }
             const qty = parseInt(document.getElementById('trade-qty').value);
-            if (qty <= 0) return alert("수량을 입력하세요.");
+            if (qty <= 0) {
+                showToast("수량을 입력하세요.", 'warning');
+                return;
+            }
             
             const code = tradeState.code;
             const marketRef = doc(db, `artifacts/${appId}/public/market_state`);
@@ -781,8 +823,6 @@
 
                     const stock = marketState.stocks[code];
                     const currentPrice = stock.price;
-                    
-                    // [핵심 수정] 수수료 적용
                     const rawAmount = currentPrice * qty;
                     let finalAmount = 0;
 
@@ -791,33 +831,28 @@
                     let stockHolding = newHoldings[code] ? { ...newHoldings[code] } : { quantity: 0, avgPrice: 0 };
 
                     if (tradeState.type === 'buy') {
-                        // 매수: 가격 + 수수료(0.15%)
+                        // 매수 수수료 반영
                         const fee = Math.floor(rawAmount * FEE_RATES.buy);
                         finalAmount = rawAmount + fee;
-
-                        if (newCash < finalAmount) throw "잔액 부족 (수수료 포함)";
                         
+                        if (newCash < finalAmount) throw "잔액 부족 (수수료 포함)";
                         newCash -= finalAmount;
                         const newQty = stockHolding.quantity + qty;
-                        
-                        // 평단가는 수수료 포함된 금액으로 계산하는 것이 현실적
                         stockHolding.avgPrice = Math.round(((stockHolding.quantity * stockHolding.avgPrice) + finalAmount) / newQty);
                         stockHolding.quantity = newQty;
                         newHoldings[code] = stockHolding;
                     } else {
-                        // 매도: 가격 - 수수료/세금(0.3%)
+                        // 매도 수수료 반영
                         if (stockHolding.quantity < qty) throw "주식 부족";
-                        
                         const fee = Math.floor(rawAmount * FEE_RATES.sell);
                         finalAmount = rawAmount - fee;
-
+                        
                         newCash += finalAmount;
                         stockHolding.quantity -= qty;
                         if (stockHolding.quantity === 0) delete newHoldings[code];
                         else newHoldings[code] = stockHolding;
                     }
 
-                    // 시장 가격 변동 로직 (그대로 유지)
                     const direction = tradeState.type === 'buy' ? 1 : -1;
                     const priceImpactPct = (qty / VIRTUAL_MARKET_DEPTH) * direction;
                     let newMarketPrice = Math.round(currentPrice * (1 + priceImpactPct));
@@ -838,10 +873,10 @@
                     transaction.update(marketRef, updates);
                 });
                 
-                alert("주문이 체결되었습니다.");
+                showToast("주문이 체결되었습니다.", 'success');
                 closeModal();
             } catch (e) {
-                alert("주문 실패: " + e);
+                showToast("주문 실패: " + e, 'error');
             }
         };
 
@@ -851,7 +886,6 @@
             if (currentUser.role === 'admin') document.getElementById('admin-panel').classList.remove('hidden');
         }
 
-        // [리스트 고정] 순서 섞임 방지
         function updateMarketUI() {
             const badge = document.getElementById('market-status-badge');
             if (gameState.isOpen) {
@@ -866,12 +900,10 @@
             const listEl = document.getElementById('stock-list');
             listEl.innerHTML = ''; 
             
-            // INITIAL_STOCKS 순서대로 루프 (리스트 위치 고정)
             INITIAL_STOCKS.forEach(initStock => {
                 const code = initStock.code;
                 const s = marketData[code]; 
                 
-                // 데이터가 아직 로드 안 됐으면 초기값 사용
                 if (!s) return; 
 
                 const colorClass = s.rate > 0 ? 'price-up' : (s.rate < 0 ? 'price-down' : 'text-gray-500');
