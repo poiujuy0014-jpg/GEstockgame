@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>대건고 주식 모의투자 (V10 - Sound FX)</title>
+    <title>대건고 주식 모의투자 (V11 - Sound Fix)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -18,7 +18,6 @@
         .silver-rank { background: linear-gradient(135deg, #e0e0e0 0%, #bdbdbd 100%); color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
         .bronze-rank { background: linear-gradient(135deg, #cd7f32 0%, #a0522d 100%); color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
         
-        /* 토스트 애니메이션 */
         @keyframes slideIn {
             from { transform: translateX(100%); opacity: 0; }
             to { transform: translateX(0); opacity: 1; }
@@ -39,7 +38,7 @@
         <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border border-gray-100">
             <div class="text-center mb-8">
                 <h1 class="text-3xl font-bold text-indigo-700 mb-2">📈 대건고 주식 모의투자</h1>
-                <p class="text-gray-500 text-sm">사운드 효과 & UX 시스템 적용</p>
+                <p class="text-gray-500 text-sm">사운드 시스템 최적화 완료</p>
             </div>
             
             <form id="login-form" class="space-y-5" onsubmit="return false;">
@@ -83,7 +82,6 @@
         </header>
 
         <main class="flex-grow max-w-7xl mx-auto w-full p-4 grid grid-cols-1 lg:grid-cols-12 gap-6">
-            
             <section class="lg:col-span-4 space-y-4">
                 <div class="bg-white rounded-xl shadow-lg p-6 border-t-4 border-indigo-500">
                     <h2 class="text-lg font-bold text-gray-700 mb-4">내 자산 현황</h2>
@@ -122,7 +120,6 @@
             </section>
 
             <section class="lg:col-span-8 space-y-6">
-                
                 <div class="bg-gray-800 text-white rounded-lg p-3 shadow flex items-center overflow-hidden">
                     <span class="bg-red-600 text-xs font-bold px-2 py-1 rounded mr-3 flex-shrink-0 animate-pulse">속보</span>
                     <div class="overflow-hidden relative w-full h-6">
@@ -135,7 +132,7 @@
                 <div class="bg-white rounded-xl shadow-lg p-5 max-h-52 overflow-y-auto">
                     <h2 class="text-lg font-bold text-gray-700 mb-3 border-b pb-2">📰 시장 뉴스</h2>
                     <div id="news-feed-list" class="space-y-2 text-sm">
-                        </div>
+                    </div>
                 </div>
 
                 <div class="bg-white rounded-xl shadow-lg flex flex-col h-[550px]">
@@ -259,19 +256,35 @@
         const FEE_RATES = { buy: 0.0015, sell: 0.003 };
         const ADMIN_EMAIL = "poiujuy0014@pess.cnehs.kr";
 
-        // [NEW] 효과음 오디오 객체 미리 로딩 (무료 효과음 URL 사용)
         const AUDIO_FILES = {
-            buy: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-coins-sound-2003.mp3'), // 짤랑
-            sell: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3'), // 띠링
-            news: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-software-interface-start-2574.mp3'), // 알림
-            error: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-wrong-answer-fail-notification-946.mp3') // 삐
+            buy: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-coins-sound-2003.mp3'), 
+            sell: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3'), 
+            news: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-software-interface-start-2574.mp3'),
+            error: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-wrong-answer-fail-notification-946.mp3') 
         };
 
-        // 효과음 재생 함수
+        // [핵심] 브라우저 소리 잠금 해제 함수
+        function enableSound() {
+            Object.values(AUDIO_FILES).forEach(audio => {
+                audio.muted = true; // 소리 안나게 설정하고
+                const playPromise = audio.play(); // 강제 재생 시도
+                if (playPromise !== undefined) {
+                    playPromise.then(_ => {
+                        audio.pause(); // 바로 멈춤
+                        audio.currentTime = 0; // 되감기
+                        audio.muted = false; // 소리 다시 켜둠 (준비 완료)
+                    }).catch(error => {
+                        console.log("오디오 자동 재생 권한 확보 실패 (사용자 클릭 필요)");
+                    });
+                }
+            });
+        }
+
         function playSound(type) {
             if(AUDIO_FILES[type]) {
-                AUDIO_FILES[type].currentTime = 0; 
-                AUDIO_FILES[type].play().catch(e => console.log('Audio play failed (interaction needed)', e));
+                const audio = AUDIO_FILES[type];
+                audio.currentTime = 0; 
+                audio.play().catch(e => console.log('소리 재생 실패:', e));
             }
         }
 
@@ -370,7 +383,6 @@
 
             container.appendChild(el);
 
-            // [NEW] 에러 시 효과음 재생
             if(type === 'error' || type === 'warning') playSound('error');
 
             setTimeout(() => {
@@ -410,6 +422,10 @@
                         totalAssets: 50000000, dataVersion: 0, lastUpdate: serverTimestamp()
                     });
                 }
+                
+                // [NEW] 로그인 성공 시 소리 권한 획득
+                enableSound();
+                
                 currentUser = { uid: docId, name, email, role };
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('game-screen').classList.remove('hidden');
@@ -663,7 +679,6 @@
                         const newNewsList = [newEvent, ...currentNews].slice(0, 20); 
                         await updateDoc(newsRef, { items: newNewsList });
                         
-                        // [NEW] 뉴스 소리 재생
                         playSound('news');
                     }
                 }
@@ -889,7 +904,6 @@
                     transaction.update(marketRef, updates);
                 });
                 
-                // [NEW] 매수/매도 성공 시 효과음 재생
                 if(tradeState.type === 'buy') playSound('buy');
                 else playSound('sell');
 
