@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>대건고 주식 모의투자 (V12 - Sound Force Fix)</title>
+    <title>대건고 주식 모의투자 (V13 - Web Audio API)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -18,14 +18,8 @@
         .silver-rank { background: linear-gradient(135deg, #e0e0e0 0%, #bdbdbd 100%); color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
         .bronze-rank { background: linear-gradient(135deg, #cd7f32 0%, #a0522d 100%); color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
         
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-        @keyframes fadeOut {
-            from { opacity: 1; }
-            to { opacity: 0; }
-        }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
         .toast-enter { animation: slideIn 0.3s ease-out forwards; }
         .toast-exit { animation: fadeOut 0.3s ease-in forwards; }
     </style>
@@ -38,7 +32,7 @@
         <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border border-gray-100">
             <div class="text-center mb-8">
                 <h1 class="text-3xl font-bold text-indigo-700 mb-2">📈 대건고 주식 모의투자</h1>
-                <p class="text-gray-500 text-sm">V12: 사운드 강제 활성화 패치</p>
+                <p class="text-gray-500 text-sm">V13: 무조건 들리는 사운드 엔진</p>
             </div>
             
             <form id="login-form" class="space-y-5" onsubmit="return false;">
@@ -56,7 +50,7 @@
             </form>
             
             <button onclick="testSound()" class="mt-3 w-full bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold py-2 rounded-lg text-sm transition flex items-center justify-center">
-                🔊 소리 테스트 (눌러보세요)
+                🔊 소리 테스트 (클릭해보세요)
             </button>
 
             <p id="login-msg" class="mt-4 text-center text-sm font-medium text-red-500 min-h-[20px]"></p>
@@ -136,8 +130,7 @@
 
                 <div class="bg-white rounded-xl shadow-lg p-5 max-h-52 overflow-y-auto">
                     <h2 class="text-lg font-bold text-gray-700 mb-3 border-b pb-2">📰 시장 뉴스</h2>
-                    <div id="news-feed-list" class="space-y-2 text-sm">
-                    </div>
+                    <div id="news-feed-list" class="space-y-2 text-sm"></div>
                 </div>
 
                 <div class="bg-white rounded-xl shadow-lg flex flex-col h-[550px]">
@@ -153,8 +146,7 @@
                         <div class="col-span-2 text-center">분석/주문</div>
                     </div>
 
-                    <div id="stock-list" class="flex-grow overflow-y-auto divide-y divide-gray-100">
-                        </div>
+                    <div id="stock-list" class="flex-grow overflow-y-auto divide-y divide-gray-100"></div>
                 </div>
             </section>
         </main>
@@ -261,54 +253,61 @@
         const FEE_RATES = { buy: 0.0015, sell: 0.003 };
         const ADMIN_EMAIL = "poiujuy0014@pess.cnehs.kr";
 
-        const AUDIO_FILES = {
-            buy: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-coins-sound-2003.mp3'), 
-            sell: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3'), 
-            news: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-software-interface-start-2574.mp3'),
-            error: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-wrong-answer-fail-notification-946.mp3') 
-        };
+        // ==========================================
+        // [V13] Web Audio API 사운드 엔진 (파일 안 씀)
+        // ==========================================
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-        // [소리 문제 해결 핵심]
-        // 1. 로그인 클릭과 동시에 실행되어야 함. (async await 전에!)
-        window.enableSound = () => {
-            console.log("🔊 사운드 권한 획득 시도...");
-            Object.keys(AUDIO_FILES).forEach(key => {
-                const audio = AUDIO_FILES[key];
-                audio.muted = true; // 소리 끄고
-                const playPromise = audio.play(); // 강제 재생
-                if (playPromise !== undefined) {
-                    playPromise.then(_ => {
-                        audio.pause();
-                        audio.currentTime = 0;
-                        audio.muted = false; // 소리 다시 켜기 (준비 완료)
-                        console.log(`✅ ${key} 사운드 준비 완료`);
-                    }).catch(error => {
-                        console.warn(`❌ 사운드 권한 획득 실패 (${key}):`, error);
-                    });
-                }
-            });
+        // 1. 소리 발생기 (신디사이저)
+        function beep(freq, type, duration, vol=0.1) {
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type; // sine, square, sawtooth, triangle
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
+
+        // 2. 효과음 패턴 정의
+        window.playSound = (type) => {
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            
+            if (type === 'buy') {
+                // 매수: 띠링~ (높은 맑은 소리)
+                beep(880, 'sine', 0.1, 0.1); 
+                setTimeout(() => beep(1760, 'sine', 0.3, 0.1), 100);
+            } 
+            else if (type === 'sell') {
+                // 매도: 차칭 (동전 느낌)
+                beep(1200, 'triangle', 0.1, 0.1);
+                setTimeout(() => beep(2000, 'sine', 0.4, 0.1), 80);
+            } 
+            else if (type === 'news') {
+                // 뉴스: 띡-똑
+                beep(600, 'square', 0.1, 0.05);
+                setTimeout(() => beep(800, 'square', 0.1, 0.05), 150);
+            } 
+            else if (type === 'error') {
+                // 에러: 붕~ (낮은 톱니파)
+                beep(150, 'sawtooth', 0.3, 0.1);
+            }
         };
 
         window.testSound = () => {
-            enableSound(); // 권한 획득 시도
-            setTimeout(() => {
-                // 실제로 소리 내보기
-                const testAudio = AUDIO_FILES['buy'];
-                testAudio.currentTime = 0;
-                testAudio.muted = false;
-                testAudio.play()
-                    .then(() => alert("소리가 들리시나요? 들린다면 성공입니다!"))
-                    .catch(e => alert("여전히 소리가 안 납니다. 브라우저 설정(사이트 설정 -> 소리 허용)을 확인하세요. 오류: " + e));
-            }, 100);
-        };
-
-        function playSound(type) {
-            if(AUDIO_FILES[type]) {
-                const audio = AUDIO_FILES[type];
-                audio.currentTime = 0; 
-                audio.play().catch(e => console.log('소리 재생 실패:', e));
+            if(audioCtx.state === 'suspended') audioCtx.resume().then(() => {
+                playSound('buy');
+                alert("소리가 들리면 성공입니다!");
+            });
+            else {
+                playSound('buy');
             }
-        }
+        };
+        // ==========================================
 
         const USERS_DB = [
             { name: "하미경", email: "mk3324@pess.cnehs.kr" },
@@ -317,25 +316,25 @@
         ];
 
         const INITIAL_STOCKS = [
-            { code: "005930", name: "삼성전자", sector: "IT", price: 100000 }, { code: "000660", name: "SK하이닉스", sector: "IT", price: 540000 },
-            { code: "035420", name: "NAVER", sector: "Platform", price: 230000 }, { code: "035720", name: "카카오", sector: "Platform", price: 58000 },
-            { code: "006400", name: "삼성SDI", sector: "Battery", price: 280000 }, { code: "011070", name: "LG이노텍", sector: "IT", price: 270000 },
-            { code: "005380", name: "현대차", sector: "Auto", price: 285000 }, { code: "000270", name: "기아", sector: "Auto", price: 121000 },
-            { code: "373220", name: "LG에너지솔루션", sector: "Battery", price: 380000 }, { code: "003670", name: "포스코퓨처엠", sector: "Battery", price: 195000 },
-            { code: "012450", name: "한화에어로스페이스", sector: "Defense", price: 885000 }, { code: "079550", name: "LIG넥스원", sector: "Defense", price: 416000 },
-            { code: "042660", name: "한화오션", sector: "Ship", price: 110000 }, { code: "329180", name: "HD현대중공업", sector: "Ship", price: 521000 },
-            { code: "010140", name: "삼성중공업", sector: "Ship", price: 25400 }, { code: "066570", name: "HD현대미포", sector: "Ship", price: 94300 },
-            { code: "005490", name: "POSCO홀딩스", sector: "Steel", price: 302000 }, { code: "004020", name: "현대제철", sector: "Steel", price: 30550 },
-            { code: "004600", name: "고려아연", sector: "Steel", price: 1310000 }, { code: "051910", name: "LG화학", sector: "Chem", price: 338000 },
-            { code: "096770", name: "SK이노베이션", sector: "Chem", price: 105000 }, { code: "011170", name: "롯데케미칼", sector: "Chem", price: 71200 },
-            { code: "009830", name: "한화솔루션", sector: "Chem", price: 27000 }, { code: "105560", name: "KB금융", sector: "Finance", price: 125000 },
-            { code: "055550", name: "신한지주", sector: "Finance", price: 77000 }, { code: "000810", name: "삼성화재", sector: "Finance", price: 488000 },
-            { code: "323410", name: "카카오뱅크", sector: "Finance", price: 21700 }, { code: "207940", name: "삼성바이오로직스", sector: "Bio", price: 1730000 },
-            { code: "068270", name: "셀트리온", sector: "Bio", price: 184000 }, { code: "000100", name: "유한양행", sector: "Bio", price: 115000 },
-            { code: "004170", name: "신세계", sector: "Retail", price: 250000 }, { code: "023530", name: "롯데쇼핑", sector: "Retail", price: 74000 },
-            { code: "097950", name: "CJ제일제당", sector: "Food", price: 210000 }, { code: "352820", name: "HYBE", sector: "Enter", price: 310000 },
-            { code: "035900", name: "JYP Ent.", sector: "Enter", price: 64000 }, { code: "041510", name: "에스엠", sector: "Enter", price: 115000 },
-            { code: "122870", name: "YG PLUS", sector: "Enter", price: 6500 }
+            { code: "005930", name: "삼성전자", sector: "IT", price: 72500 }, { code: "000660", name: "SK하이닉스", sector: "IT", price: 132000 },
+            { code: "035420", name: "NAVER", sector: "Platform", price: 205000 }, { code: "035720", name: "카카오", sector: "Platform", price: 54000 },
+            { code: "006400", name: "삼성SDI", sector: "Battery", price: 430000 }, { code: "011070", name: "LG이노텍", sector: "IT", price: 230000 },
+            { code: "005380", name: "현대차", sector: "Auto", price: 185000 }, { code: "000270", name: "기아", sector: "Auto", price: 88000 },
+            { code: "373220", name: "LG에너지솔루션", sector: "Battery", price: 410000 }, { code: "003670", name: "포스코퓨처엠", sector: "Battery", price: 320000 },
+            { code: "012450", name: "한화에어로스페이스", sector: "Defense", price: 125000 }, { code: "079550", name: "LIG넥스원", sector: "Defense", price: 130000 },
+            { code: "042660", name: "한화오션", sector: "Ship", price: 28000 }, { code: "329180", name: "HD현대중공업", sector: "Ship", price: 115000 },
+            { code: "010140", name: "삼성중공업", sector: "Ship", price: 7800 }, { code: "066570", name: "HD현대미포", sector: "Ship", price: 85000 },
+            { code: "005490", name: "POSCO홀딩스", sector: "Steel", price: 440000 }, { code: "004020", name: "현대제철", sector: "Steel", price: 34000 },
+            { code: "004600", name: "고려아연", sector: "Steel", price: 480000 }, { code: "051910", name: "LG화학", sector: "Chem", price: 470000 },
+            { code: "096770", name: "SK이노베이션", sector: "Chem", price: 135000 }, { code: "011170", name: "롯데케미칼", sector: "Chem", price: 140000 },
+            { code: "009830", name: "한화솔루션", sector: "Chem", price: 32000 }, { code: "105560", name: "KB금융", sector: "Finance", price: 58000 },
+            { code: "055550", name: "신한지주", sector: "Finance", price: 42000 }, { code: "000810", name: "삼성화재", sector: "Finance", price: 260000 },
+            { code: "323410", name: "카카오뱅크", sector: "Finance", price: 26000 }, { code: "207940", name: "삼성바이오로직스", sector: "Bio", price: 760000 },
+            { code: "068270", name: "셀트리온", sector: "Bio", price: 180000 }, { code: "000100", name: "유한양행", sector: "Bio", price: 65000 },
+            { code: "004170", name: "신세계", sector: "Retail", price: 170000 }, { code: "023530", name: "롯데쇼핑", sector: "Retail", price: 72000 },
+            { code: "097950", name: "CJ제일제당", sector: "Food", price: 310000 }, { code: "352820", name: "HYBE", sector: "Enter", price: 220000 },
+            { code: "035900", name: "JYP Ent.", sector: "Enter", price: 95000 }, { code: "041510", name: "에스엠", sector: "Enter", price: 90000 },
+            { code: "122870", name: "YG PLUS", sector: "Enter", price: 5500 }
         ];
 
         const NEWS_TEMPLATES = {
@@ -417,8 +416,8 @@
         async function login(e) {
             e.preventDefault(); 
             
-            // [중요 수정] 로그인 처리(await)보다 먼저 소리를 뚫어줘야 함!
-            window.enableSound(); 
+            // Web Audio Context 활성화 (브라우저 정책)
+            if(audioCtx.state === 'suspended') audioCtx.resume();
 
             const name = document.getElementById('login-name').value.trim();
             const email = document.getElementById('login-email').value.trim().toLowerCase();
@@ -456,6 +455,7 @@
                 startRealtimeSync();
                 subscribeToRankings();
                 showToast(`환영합니다, ${name}님!`, 'success');
+                playSound('buy'); // 로그인 성공음
             } catch (err) {
                 console.error(err);
                 document.getElementById('login-msg').textContent = "로그인 오류: " + err.message;
@@ -939,7 +939,7 @@
 
         function setupUI() {
             document.getElementById('user-name-display').innerText = currentUser.name;
-            document.getElementById('user-role-display').innerText = currentUser.role === 'admin' ? '관리자(선생님)' : '투자자';
+            document.getElementById('user-role-display').innerText = currentUser.role === 'admin' ? '관리자' : '투자자';
             if (currentUser.role === 'admin') document.getElementById('admin-panel').classList.remove('hidden');
         }
 
