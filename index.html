@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>대건고 주식 모의투자 (V30 - News Article Update)</title>
+    <title>대건고 주식 모의투자 (V31 - Final Update)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -45,7 +45,7 @@
         <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border border-gray-100">
             <div class="text-center mb-8">
                 <h1 class="text-3xl font-bold text-indigo-700 mb-2">📈 대건고 주식 모의투자</h1>
-                <p class="text-gray-500 text-sm">V30: 뉴스 심층 보도 시스템</p>
+                <p class="text-gray-500 text-sm">V31: 뉴스 심층 보도 시스템</p>
             </div>
             
             <form id="login-form" class="space-y-5" onsubmit="return false;">
@@ -153,7 +153,7 @@
         </main>
 
         <div id="admin-panel" class="hidden fixed bottom-4 right-4 bg-gray-900 text-white p-4 rounded-xl shadow-2xl z-50 opacity-90 hover:opacity-100 transition border-2 border-yellow-500 w-80 max-h-[80vh] flex flex-col">
-            <h3 class="font-bold text-yellow-400 mb-3 text-center border-b border-gray-700 pb-2">👑 관리자 모드 (V30)</h3>
+            <h3 class="font-bold text-yellow-400 mb-3 text-center border-b border-gray-700 pb-2">👑 관리자 모드 (V31)</h3>
             
             <div class="flex-grow overflow-y-auto space-y-2 pr-1 scrollbar-hide text-xs">
                 <div class="grid grid-cols-2 gap-2 mb-4">
@@ -176,11 +176,11 @@
                     <button onclick="runScenario(4)" class="px-2 py-1 bg-gray-800 hover:bg-indigo-900 rounded text-left">11:00 어닝 시즌</button>
                     <button onclick="runScenario(5)" class="px-2 py-1 bg-gray-800 hover:bg-indigo-900 rounded text-left">11:30 환율 피해</button>
                     <button onclick="runScenario(6)" class="px-2 py-1 bg-gray-800 hover:bg-indigo-900 rounded text-left">12:00 점심 관망</button>
-                    <button onclick="runScenario(7)" class="px-2 py-1 bg-gray-800 hover:bg-indigo-900 rounded text-left">14:00 성장주 반등</button>
-                    <button onclick="runScenario(8)" class="px-2 py-1 bg-gray-800 hover:bg-indigo-900 rounded text-left">14:30 실적 점프</button>
-                    <button onclick="runScenario(9)" class="px-2 py-1 bg-gray-800 hover:bg-indigo-900 rounded text-left">15:00 기관 폭매수</button>
-                    <button onclick="runScenario(10)" class="px-2 py-1 bg-gray-800 hover:bg-indigo-900 rounded text-left">15:30 배당주 관리</button>
-                    <button onclick="runScenario(11)" class="px-2 py-1 bg-gray-800 hover:bg-indigo-900 rounded text-left">16:00 윈도우 드레싱</button>
+                    <button onclick="runScenario(7)" class="px-2 py-1 bg-gray-800 hover:bg-indigo-900 rounded text-left text-yellow-300">13:30 성장주 반등</button>
+                    <button onclick="runScenario(8)" class="px-2 py-1 bg-gray-800 hover:bg-indigo-900 rounded text-left text-yellow-300">14:00 실적 점프</button>
+                    <button onclick="runScenario(9)" class="px-2 py-1 bg-gray-800 hover:bg-indigo-900 rounded text-left text-yellow-300">14:30 기관 폭매수</button>
+                    <button onclick="runScenario(10)" class="px-2 py-1 bg-gray-800 hover:bg-indigo-900 rounded text-left text-yellow-300">15:00 배당주 관리</button>
+                    <button onclick="runScenario(11)" class="px-2 py-1 bg-gray-800 hover:bg-indigo-900 rounded text-left text-yellow-300">15:30 윈도우 드레싱</button>
                 </div>
 
                 <div class="h-4 border-b border-gray-700 mb-2"></div>
@@ -195,6 +195,7 @@
                 <div>
                     <h3 id="modal-stock-name" class="text-xl font-bold text-gray-900">삼성전자</h3>
                     <span id="modal-stock-code" class="text-xs text-gray-500 bg-gray-200 px-2 py-0.5 rounded">005930</span>
+                    <span id="modal-sector" class="text-xs font-bold text-indigo-600 ml-2">IT Sector</span>
                 </div>
                 <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 font-bold text-xl">✕</button>
             </div>
@@ -203,14 +204,22 @@
                 <div class="mb-6">
                     <canvas id="stockChart" width="400" height="200"></canvas>
                 </div>
+
+                <div class="bg-indigo-50 p-3 rounded-lg mb-6 text-sm text-indigo-800">
+                    <span class="font-bold">📢 기업 정보:</span>
+                    <span id="modal-desc">정보 로딩 중...</span>
+                </div>
+
                 <div class="flex items-center justify-between mb-4">
                     <span class="text-sm text-gray-600">현재가</span>
                     <span id="modal-price" class="text-3xl font-bold text-indigo-600">70,000</span>
                 </div>
+
                 <div class="flex mb-4 bg-gray-100 p-1 rounded-lg">
                     <button onclick="setTradeType('buy')" id="tab-buy" class="flex-1 py-2 rounded-md text-sm font-bold bg-white shadow text-red-600 transition">매수</button>
                     <button onclick="setTradeType('sell')" id="tab-sell" class="flex-1 py-2 rounded-md text-sm font-bold text-gray-500 hover:text-blue-600 transition">매도</button>
                 </div>
+
                 <div class="space-y-4">
                     <div>
                         <label class="block text-xs font-medium text-gray-500 mb-1">수량</label>
@@ -219,6 +228,7 @@
                             <button onclick="setMaxQty()" class="px-3 py-2 bg-gray-200 text-xs font-bold text-gray-600 rounded-r-lg hover:bg-gray-300">최대</button>
                         </div>
                     </div>
+                    
                     <div class="flex justify-between text-sm">
                         <span class="text-gray-500">주문 총액</span>
                         <div id="trade-total" class="text-right">0원</div>
@@ -228,6 +238,7 @@
                         <span id="available-asset">0원</span>
                     </div>
                 </div>
+
                 <button id="btn-execute" onclick="executeOrder()" class="w-full mt-6 bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg shadow transition">
                     매수 주문
                 </button>
@@ -236,22 +247,22 @@
     </div>
 
     <div id="article-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 z-[60] flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden relative flex flex-col max-h-[90vh]">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-3xl overflow-hidden relative flex flex-col max-h-[90vh]">
             <div class="bg-gray-50 border-b-2 border-gray-800 p-6">
                 <div class="flex justify-between items-start mb-2">
                     <span id="article-time" class="bg-red-600 text-white text-xs font-bold px-2 py-1 rounded">속보</span>
                     <button onclick="closeArticleModal()" class="text-gray-400 hover:text-black text-2xl font-bold">✕</button>
                 </div>
-                <h2 id="article-title" class="text-2xl font-black text-gray-900 leading-tight article-font">
+                <h2 id="article-title" class="text-3xl font-black text-gray-900 leading-tight article-font mt-2">
                     기사 제목이 들어갑니다.
                 </h2>
-                <p class="text-gray-500 text-xs mt-2 text-right">대건경제 | 김태준 기자</p>
+                <p class="text-gray-500 text-sm mt-3 text-right">대건경제 | <b>김동관 기자</b></p>
             </div>
             
-            <div class="p-8 overflow-y-auto article-font text-gray-800 leading-relaxed text-lg text-justify bg-white custom-scrollbar">
-                <p id="article-content">
+            <div class="p-8 overflow-y-auto article-font text-gray-800 text-xl leading-loose text-justify bg-white custom-scrollbar">
+                <div id="article-content">
                     본문 내용이 들어갑니다.
-                </p>
+                </div>
             </div>
 
             <div class="p-4 bg-gray-100 text-center border-t text-xs text-gray-500">
@@ -389,6 +400,47 @@
             { code: "122870", name: "와이지엔터테인먼트", sector: "Enter", price: 63600 }
         ];
 
+        // 🟢 V31: 기업 설명 전체 복구
+        const COMPANY_DESCRIPTIONS = {
+            "005930": "글로벌 메모리 반도체 1위 및 스마트폰, 가전 세계적 기업",
+            "000660": "글로벌 메모리 반도체 2위, HBM 시장 선도 기업",
+            "035420": "국내 1위 검색 포털 및 AI, 커머스 플랫폼 기업",
+            "035720": "국민 메신저 카카오톡 기반의 모바일 라이프 플랫폼",
+            "006400": "소형 배터리 및 전기차용 중대형 배터리 제조 기업",
+            "011070": "모바일용 카메라 모듈 및 첨단 전자 부품 제조사",
+            "005380": "글로벌 TOP3 자동차 완성차 제조업체",
+            "000270": "디자인 경영을 통한 글로벌 자동차 제조업체",
+            "373220": "세계 최고의 기술력을 보유한 전기차 배터리 생산 기업",
+            "003670": "2차전지 양극재 및 음극재 생산 글로벌 소재 기업",
+            "012450": "항공우주 및 방위산업 분야의 대한민국 대표 기업",
+            "079550": "정밀 유도무기 등 첨단 무기 체계 개발 방산업체",
+            "042660": "잠수함 및 특수선 분야 경쟁력을 갖춘 조선 해양 기업",
+            "329180": "세계 1위 조선 기술력을 보유한 중공업 회사",
+            "010140": "고부가가치 선박 및 해양 설비 전문 조선 기업",
+            "066570": "중형 선박 및 PC선 분야 세계 시장 점유율 1위",
+            "005490": "철강을 넘어 2차전지 소재로 도약하는 친환경 미래 소재 기업",
+            "004020": "자동차용 강판 및 건설용 철강재 생산 전기로 제철소",
+            "004600": "세계 최고 수준의 비철금속(아연, 납) 제련 기업",
+            "051910": "석유화학, 첨단소재, 생명과학 분야의 글로벌 화학 기업",
+            "096770": "정유, 화학, 윤활유 및 배터리 사업을 영위하는 에너지 기업",
+            "011170": "다양한 화학 제품을 생산하는 롯데그룹의 화학 계열사",
+            "009830": "태양광 에너지 및 케미칼 소재 전문 기업",
+            "105560": "은행, 증권, 보험 등을 아우르는 국내 최대 금융지주",
+            "055550": "디지털 혁신을 선도하는 글로벌 금융 그룹",
+            "000810": "국내 손해보험 업계를 선도하는 삼성의 금융 계열사",
+            "323410": "모바일 중심의 혁신적인 인터넷 전문 은행",
+            "207940": "글로벌 1위 바이오 의약품 위탁 생산(CMO) 기업",
+            "068270": "바이오 시밀러 및 신약 개발 글로벌 바이오 기업",
+            "000100": "신약 개발(렉라자 등) 성과를 내는 존경받는 제약사",
+            "004170": "백화점 및 패션, 뷰티 사업을 영위하는 유통 공룡",
+            "023530": "백화점, 마트, 슈퍼 등을 운영하는 종합 유통 기업",
+            "097950": "비비고 등 K-푸드 글로벌 확산의 주역인 식품 기업",
+            "352820": "BTS 등 글로벌 아티스트를 보유한 엔터테인먼트 플랫폼",
+            "035900": "트와이스, 스트레이키즈 등 K-POP 아이돌 명가",
+            "041510": "NCT, 에스파 등 독창적 IP를 보유한 K-POP 선두주자",
+            "122870": "블랙핑크, 베이비몬스터 등 글로벌 IP를 보유한 엔터 기업"
+        };
+
         const NEWS_TEMPLATES = {
             'Market': [
                 { text: "미국 연준, 기준금리 동결 발표... 시장 전반 안도 랠리", type: "good", impact: 0.03 },
@@ -406,7 +458,7 @@
             ]
         };
 
-        // 🟢 V30: 기사 전문 데이터 (선생님이 제공한 내용)
+        // 🟢 V31: 기사 전문 데이터 (시간 30분씩 앞당김 적용)
         const SCENARIO_DETAILS = {
             1: {
                 title: "[속보] “산타가 온다”...삼성전자, 현대차 등 대형주 주도로 코스피 ‘강세’",
@@ -454,6 +506,7 @@
             }
         };
 
+        // 🟢 V31: 시나리오 시간 조정 (오후 시간 30분씩 당김)
         const SCENARIOS_DATA = {
             1: { time: "오전 9:30", targets: ["005930", "000660", "005380", "035420", "005490"], delta: 0.18 },
             2: { time: "오전 10:00", targets: ["207940", "068270", "000270", "011070", "035720"], delta: -0.15 },
@@ -502,9 +555,10 @@
             }, 3000);
         };
 
+        // 🟢 V31: 랜덤 뉴스 주기 변경 (40초 ~ 60초)
         function startAutoNewsLoop() {
             if (!currentUser || currentUser.role !== 'admin') return;
-            const minDelay = 45000;
+            const minDelay = 40000;
             const maxDelay = 60000;
             const delay = Math.floor(Math.random() * (maxDelay - minDelay + 1)) + minDelay;
             setTimeout(async () => {
@@ -688,7 +742,7 @@
         window.runScenario = async (scenarioId) => {
             if (currentUser.role !== 'admin') return;
             const scenario = SCENARIOS_DATA[scenarioId];
-            const detail = SCENARIO_DETAILS[scenarioId]; // 🟢 기사 디테일 가져오기
+            const detail = SCENARIO_DETAILS[scenarioId];
             if (!scenario) return;
 
             const newsRef = doc(db, `artifacts/${appId}/public/news`);
@@ -697,9 +751,9 @@
             
             const newEvent = {
                 time: scenario.time, 
-                text: detail.title, // 🟢 제목을 뉴스 티커용으로 사용
-                fullTitle: detail.title, // 🟢 모달용 전체 제목
-                fullContent: detail.content, // 🟢 모달용 전체 본문
+                text: detail.title,
+                fullTitle: detail.title, 
+                fullContent: detail.content,
                 type: 'forecast' 
             };
             const newNewsList = [newEvent, ...currentNews].slice(0, 20);
@@ -773,6 +827,12 @@
             tradeState.type = 'buy';
             document.getElementById('modal-stock-name').innerText = stock.name;
             document.getElementById('modal-stock-code').innerText = code;
+            document.getElementById('modal-sector').innerText = stock.sector + " Sector";
+            
+            // 🟢 V31: 기업 설명 복구 확인 및 적용
+            const desc = COMPANY_DESCRIPTIONS[code] || "대한민국 대표 우량 기업입니다.";
+            document.getElementById('modal-desc').innerText = desc;
+            
             document.getElementById('trade-qty').value = 1;
             updateModalUI();
             document.getElementById('trade-modal').classList.remove('hidden');
@@ -1005,7 +1065,6 @@
                 }
 
                 list.innerHTML = '';
-                // 🟢 V30: 뉴스 리스트 10개까지 표시
                 newsList.slice(0, 10).forEach(news => {
                     let icon = '⚪';
                     let colorClass = "";
@@ -1018,13 +1077,12 @@
                         icon = '📰'; 
                         colorClass = "text-indigo-700 font-bold underline"; 
                         cursorClass = "cursor-pointer hover:bg-indigo-50"; 
-                        // 🟢 기사 클릭 시 모달 열기
                         clickEvent = `onclick="openArticleModal('${news.fullTitle || news.text}', '${news.fullContent || ''}', '${news.time}')"`;
                     }
 
                     const div = document.createElement('div');
                     div.className = `p-3 border-b border-gray-100 last:border-0 transition rounded-lg ${cursorClass}`;
-                    if(clickEvent) div.setAttribute('onclick', clickEvent.replace('onclick="', '').replace('"', '')); // setAttribute가 안전
+                    if(clickEvent) div.setAttribute('onclick', clickEvent.replace('onclick="', '').replace('"', ''));
 
                     div.innerHTML = `
                         <div class="flex justify-between text-xs text-gray-400 mb-1">
@@ -1036,7 +1094,6 @@
                             <span class="${colorClass} text-sm leading-snug">${news.text}</span>
                         </div>
                     `;
-                    // forecast 타입일 때만 클릭 이벤트 바인딩 (HTML string 방식 대신 addEventListener 사용)
                     if(news.type === 'forecast') {
                         div.onclick = () => openArticleModal(news.fullTitle || news.text, news.fullContent, news.time);
                     }
@@ -1046,11 +1103,15 @@
             }
         }
 
-        // 🟢 V30: 기사 전문 모달 제어 함수
+        // 🟢 V31: 기사 모달 (자동 문단 나누기 적용)
         window.openArticleModal = (title, content, time) => {
-            if(!content) return; // 내용 없으면 안 염
+            if(!content) return;
+            
+            // 텍스트 가독성을 위해 마침표 뒤에 문단 나누기 적용 (단, 내용은 건들지 않음)
+            const formattedContent = content.replace(/\.(?=\s)/g, '.<br><br>');
+            
             document.getElementById('article-title').innerText = title;
-            document.getElementById('article-content').innerText = content;
+            document.getElementById('article-content').innerHTML = formattedContent;
             document.getElementById('article-time').innerText = time + " 속보";
             document.getElementById('article-modal').classList.remove('hidden');
         };
