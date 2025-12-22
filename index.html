@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>대건고 주식 모의투자 (V26 - Fixed Scenario)</title>
+    <title>대건고 주식 모의투자 (V27 - Full Data)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -39,7 +39,7 @@
         <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border border-gray-100">
             <div class="text-center mb-8">
                 <h1 class="text-3xl font-bold text-indigo-700 mb-2">📈 대건고 주식 모의투자</h1>
-                <p class="text-gray-500 text-sm">실시간 뉴스 & 시나리오 시스템 (V26)</p>
+                <p class="text-gray-500 text-sm">실시간 뉴스 & 시나리오 시스템 (V27)</p>
             </div>
             
             <form id="login-form" class="space-y-5" onsubmit="return false;">
@@ -423,7 +423,6 @@
             ]
         };
 
-        // 🟢 V26: 선생님 요청 시나리오 11개 적용
         const SCENARIOS_DATA = {
             1: { time: "오전 9:30", type: "forecast", text: "[전망] 산타랠리 모멘텀: 기관 대규모 매수세 유입 조짐... 대형주 강세 예상", targets: ["005930", "000660", "005380", "035420", "005490"], delta: 0.18 },
             2: { time: "오전 10:00", type: "forecast", text: "[전망] 기술적 분석: 단기 급등 부담감에 차익 매물 출회 가능성 대두", targets: ["207940", "068270", "000270", "011070", "035720"], delta: -0.15 },
@@ -438,6 +437,7 @@
             11: { time: "오후 4:00", type: "forecast", text: "[전망] 윈도우 드레싱: 기관 수익률 제고를 위한 막판 대형주 집중 매수 예상", targets: ["005930", "005380", "105560", "207940", "005490", "035420"], delta: 0.10 }
         };
 
+        // 🟢 V27: 선생님 요청 데이터 37개 전체 반영 완료 (삭제 없음)
         const COMPANY_DESCRIPTIONS = {
             "005930": "글로벌 메모리 반도체 1위 및 스마트폰, 가전 세계적 기업",
             "000660": "글로벌 메모리 반도체 2위, HBM 시장 선도 기업",
