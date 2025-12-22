@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>대건고 주식 모의투자 (V22 - All Rankings)</title>
+    <title>대건고 주식 모의투자 (V23 - Auto News)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -32,7 +32,7 @@
         <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border border-gray-100">
             <div class="text-center mb-8">
                 <h1 class="text-3xl font-bold text-indigo-700 mb-2">📈 대건고 주식 모의투자</h1>
-                <p class="text-gray-500 text-sm">실전 모의투자 (V22 - All Rankings)</p>
+                <p class="text-gray-500 text-sm">자동 뉴스 시스템 탑재 (V23)</p>
             </div>
             
             <form id="login-form" class="space-y-5" onsubmit="return false;">
@@ -155,7 +155,7 @@
                     <button onclick="adminFunc('stop')" class="bg-red-600 hover:bg-red-700 py-2 rounded font-bold">⛔ 마감</button>
                 </div>
                 
-                <div class="text-center text-gray-400 text-[10px] mb-1">- 시나리오 실행 (5분 딜레이) -</div>
+                <div class="text-center text-gray-400 text-[10px] mb-1">- 시나리오 (자동 뉴스 외 별도 실행) -</div>
 
                 <button onclick="runScenario(1)" class="w-full text-left px-3 py-2 bg-gray-800 hover:bg-indigo-900 border border-gray-700 rounded transition flex items-center">
                     <span class="text-yellow-400 font-mono mr-2">9:30</span> 산타랠리
@@ -192,7 +192,7 @@
                 </button>
 
                 <div class="h-4 border-b border-gray-700 mb-2"></div>
-                <button onclick="triggerRandomNews()" class="w-full bg-blue-700 hover:bg-blue-600 py-2 rounded font-bold mb-2">🎲 랜덤 뉴스 (커스텀)</button>
+                <div class="text-center text-xs text-yellow-300 animate-pulse mb-2">⚡ 자동 뉴스 시스템 가동 중</div>
                 <button onclick="adminFunc('reset')" class="w-full bg-black border border-red-500 text-red-500 hover:bg-red-900 py-2 rounded">⚠️ 데이터 전체 초기화</button>
             </div>
         </div>
@@ -287,7 +287,6 @@
         const FEE_RATES = { buy: 0.0015, sell: 0.003 };
         const ADMIN_EMAIL = "poiujuy0014@pess.cnehs.kr";
 
-        // 사운드 시스템
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function beep(freq, type, duration, vol=0.1) {
             if(audioCtx.state === 'suspended') audioCtx.resume();
@@ -362,7 +361,6 @@
             { code: "122870", name: "와이지엔터테인먼트", sector: "Enter", price: 63600 }
         ];
 
-        // 🟢 방금 선생님이 제공하신 뉴스 템플릿 통합 완료
         const NEWS_TEMPLATES = {
             'Market': [
                 { text: "미국 연준, 기준금리 동결 발표... 시장 안도 랠리", type: "good", impact: 0.03 },
@@ -519,7 +517,7 @@
         let userPortfolio = { cash: 50000000, holdings: {} };
         let tradeState = { type: 'buy', code: null };
         let gameState = { day: 1, isOpen: false, gameVersion: 0, time: "09:00" }; 
-        let allUsersCache = []; // 전체 랭킹용 캐시
+        let allUsersCache = []; 
         let chartInstance = null;
 
         window.showToast = (message, type = 'info') => {
@@ -549,6 +547,27 @@
                 setTimeout(() => el.remove(), 300);
             }, 3000);
         };
+
+        // 🟢 자동 뉴스 생성 루프 (관리자 전용)
+        function startAutoNewsLoop() {
+            if (!currentUser || currentUser.role !== 'admin') return;
+
+            // 20초 ~ 50초 사이 랜덤 딜레이
+            const minDelay = 20000;
+            const maxDelay = 50000;
+            const delay = Math.floor(Math.random() * (maxDelay - minDelay + 1)) + minDelay;
+
+            console.log(`[System] 다음 뉴스는 ${delay/1000}초 뒤에 생성됩니다.`);
+
+            setTimeout(async () => {
+                // 장이 열려 있을 때만 뉴스 생성
+                if (gameState.isOpen) {
+                    await triggerRandomNews();
+                }
+                // 재귀 호출로 무한 반복
+                startAutoNewsLoop();
+            }, delay);
+        }
 
         async function login(e) {
             e.preventDefault(); 
@@ -582,9 +601,15 @@
                 document.getElementById('game-screen').classList.remove('hidden');
                 setupUI();
                 startRealtimeSync();
-                subscribeToRankings(); // 전체 랭킹 구독
+                subscribeToRankings(); 
                 showToast(`환영합니다, ${name}님!`, 'success');
                 playSound('buy'); 
+
+                // 🟢 관리자라면 자동 뉴스 루프 시작
+                if (role === 'admin') {
+                    startAutoNewsLoop();
+                }
+
             } catch (err) {
                 console.error(err);
                 document.getElementById('login-msg').textContent = "로그인 오류: " + err.message;
@@ -622,7 +647,6 @@
             });
         }
         
-        // V22 핵심: 전체 사용자 랭킹 구독
         function subscribeToRankings() {
             const q = query(collection(db, `artifacts/${appId}/users`));
             onSnapshot(q, (snapshot) => {
@@ -698,8 +722,10 @@
             }
         };
 
-        // 커스텀 랜덤 뉴스 (V22)
-        window.triggerRandomNews = async () => {
+        // 자동 뉴스 로직에서 호출되는 함수 (버튼 트리거 제거됨)
+        async function triggerRandomNews() {
+            // Admin 체크, Market Open 체크는 호출부(startAutoNewsLoop)에서 1차로 하지만
+            // 안전을 위해 한번 더 체크
             if (currentUser.role !== 'admin') return;
 
             const codes = Object.keys(marketData);
@@ -753,7 +779,8 @@
             }
             
             await updateDoc(marketRef, updates);
-            showToast("🎲 랜덤 뉴스 송출 및 주가 반영 완료!", 'success');
+            // 관리자 콘솔에 로그만 남김 (토스트 메시지 너무 많으면 방해될 수 있으므로)
+            console.log("🎲 자동 뉴스 생성 완료: " + newsText);
         };
 
         window.runScenario = async (scenarioId) => {
