@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>대건고 주식 모의투자 (V14 - One Day Event)</title>
+    <title>대건고 주식 모의투자 (V15 - Real Data)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -32,7 +32,7 @@
         <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border border-gray-100">
             <div class="text-center mb-8">
                 <h1 class="text-3xl font-bold text-indigo-700 mb-2">📈 대건고 주식 모의투자</h1>
-                <p class="text-gray-500 text-sm">V14: 1 Day Event Special</p>
+                <p class="text-gray-500 text-sm">V15: 최신 주가 및 기업 정보 반영</p>
             </div>
             
             <form id="login-form" class="space-y-5" onsubmit="return false;">
@@ -68,7 +68,7 @@
                 <div class="flex items-center space-x-4">
                     <h1 class="text-xl font-bold text-gray-800 hidden sm:block">모의투자</h1>
                     <span id="market-status-badge" class="px-3 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-500">장 준비 중</span>
-                    <span id="simulation-time" class="text-sm font-bold text-indigo-600">실시간 진행 중</span>
+                    <span id="simulation-time" class="text-sm font-bold text-indigo-600"></span>
                 </div>
                 <div class="flex items-center space-x-4">
                     <div class="text-right">
@@ -270,32 +270,15 @@
 
         window.playSound = (type) => {
             if(audioCtx.state === 'suspended') audioCtx.resume();
-            
-            if (type === 'buy') {
-                beep(880, 'sine', 0.1, 0.1); 
-                setTimeout(() => beep(1760, 'sine', 0.3, 0.1), 100);
-            } 
-            else if (type === 'sell') {
-                beep(1200, 'triangle', 0.1, 0.1);
-                setTimeout(() => beep(2000, 'sine', 0.4, 0.1), 80);
-            } 
-            else if (type === 'news') {
-                beep(600, 'square', 0.1, 0.05);
-                setTimeout(() => beep(800, 'square', 0.1, 0.05), 150);
-            } 
-            else if (type === 'error') {
-                beep(150, 'sawtooth', 0.3, 0.1);
-            }
+            if (type === 'buy') { beep(880, 'sine', 0.1, 0.1); setTimeout(() => beep(1760, 'sine', 0.3, 0.1), 100); } 
+            else if (type === 'sell') { beep(1200, 'triangle', 0.1, 0.1); setTimeout(() => beep(2000, 'sine', 0.4, 0.1), 80); } 
+            else if (type === 'news') { beep(600, 'square', 0.1, 0.05); setTimeout(() => beep(800, 'square', 0.1, 0.05), 150); } 
+            else if (type === 'error') { beep(150, 'sawtooth', 0.3, 0.1); }
         };
 
         window.testSound = () => {
-            if(audioCtx.state === 'suspended') audioCtx.resume().then(() => {
-                playSound('buy');
-                alert("소리가 들리면 성공입니다!");
-            });
-            else {
-                playSound('buy');
-            }
+            if(audioCtx.state === 'suspended') audioCtx.resume().then(() => { playSound('buy'); alert("소리가 들리면 성공입니다!"); });
+            else { playSound('buy'); }
         };
 
         const USERS_DB = [
@@ -304,27 +287,88 @@
             { name: "강은성", email: "rkd2022@pess.cnehs.kr" },
         ];
 
+       // [수정] 최신 주가 반영 (2024~2025 현실적 가격대)
         const INITIAL_STOCKS = [
-            { code: "005930", name: "삼성전자", sector: "IT", price: 72500 }, { code: "000660", name: "SK하이닉스", sector: "IT", price: 132000 },
-            { code: "035420", name: "NAVER", sector: "Platform", price: 205000 }, { code: "035720", name: "카카오", sector: "Platform", price: 54000 },
-            { code: "006400", name: "삼성SDI", sector: "Battery", price: 430000 }, { code: "011070", name: "LG이노텍", sector: "IT", price: 230000 },
-            { code: "005380", name: "현대차", sector: "Auto", price: 185000 }, { code: "000270", name: "기아", sector: "Auto", price: 88000 },
-            { code: "373220", name: "LG에너지솔루션", sector: "Battery", price: 410000 }, { code: "003670", name: "포스코퓨처엠", sector: "Battery", price: 320000 },
-            { code: "012450", name: "한화에어로스페이스", sector: "Defense", price: 125000 }, { code: "079550", name: "LIG넥스원", sector: "Defense", price: 130000 },
-            { code: "042660", name: "한화오션", sector: "Ship", price: 28000 }, { code: "329180", name: "HD현대중공업", sector: "Ship", price: 115000 },
-            { code: "010140", name: "삼성중공업", sector: "Ship", price: 7800 }, { code: "066570", name: "HD현대미포", sector: "Ship", price: 85000 },
-            { code: "005490", name: "POSCO홀딩스", sector: "Steel", price: 440000 }, { code: "004020", name: "현대제철", sector: "Steel", price: 34000 },
-            { code: "004600", name: "고려아연", sector: "Steel", price: 480000 }, { code: "051910", name: "LG화학", sector: "Chem", price: 470000 },
-            { code: "096770", name: "SK이노베이션", sector: "Chem", price: 135000 }, { code: "011170", name: "롯데케미칼", sector: "Chem", price: 140000 },
-            { code: "009830", name: "한화솔루션", sector: "Chem", price: 32000 }, { code: "105560", name: "KB금융", sector: "Finance", price: 58000 },
-            { code: "055550", name: "신한지주", sector: "Finance", price: 42000 }, { code: "000810", name: "삼성화재", sector: "Finance", price: 260000 },
-            { code: "323410", name: "카카오뱅크", sector: "Finance", price: 26000 }, { code: "207940", name: "삼성바이오로직스", sector: "Bio", price: 760000 },
-            { code: "068270", name: "셀트리온", sector: "Bio", price: 180000 }, { code: "000100", name: "유한양행", sector: "Bio", price: 65000 },
-            { code: "004170", name: "신세계", sector: "Retail", price: 170000 }, { code: "023530", name: "롯데쇼핑", sector: "Retail", price: 72000 },
-            { code: "097950", name: "CJ제일제당", sector: "Food", price: 310000 }, { code: "352820", name: "HYBE", sector: "Enter", price: 220000 },
-            { code: "035900", name: "JYP Ent.", sector: "Enter", price: 95000 }, { code: "041510", name: "에스엠", sector: "Enter", price: 90000 },
-            { code: "122870", name: "YG PLUS", sector: "Enter", price: 5500 }
+            { code: "005930", name: "삼성전자", sector: "IT", price: 110000 }, 
+            { code: "000660", name: "SK하이닉스", sector: "IT", price: 577000 },
+            { code: "035420", name: "NAVER", sector: "Platform", price: 237000 }, 
+            { code: "035720", name: "카카오", sector: "Platform", price: 58700 },
+            { code: "006400", name: "삼성SDI", sector: "Battery", price: 283,500 }, 
+            { code: "011070", name: "LG이노텍", sector: "IT", price: 278000 },
+            { code: "005380", name: "현대차", sector: "Auto", price: 288500 }, 
+            { code: "000270", name: "기아", sector: "Auto", price: 120700 },
+            { code: "373220", name: "LG에너지솔루션", sector: "Battery", price: 389500 }, 
+            { code: "003670", name: "포스코퓨처엠", sector: "Battery", price: 196200 },
+            { code: "012450", name: "한화에어로스페이스", sector: "Defense", price: 897000 }, 
+            { code: "079550", name: "LIG넥스원", sector: "Defense", price: 416500 },
+            { code: "042660", name: "한화오션", sector: "Ship", price: 110700 }, 
+            { code: "329180", name: "HD현대중공업", sector: "Ship", price: 516000 },
+            { code: "010140", name: "삼성중공업", sector: "Ship", price: 24950 }, 
+            { code: "066570", name: "HD현대미포", sector: "Ship", price: 223000 },
+            { code: "005490", name: "POSCO홀딩스", sector: "Steel", price: 306000 }, 
+            { code: "004020", name: "현대제철", sector: "Steel", price: 30600 },
+            { code: "004600", name: "고려아연", sector: "Steel", price: 1384000 }, 
+            { code: "051910", name: "LG화학", sector: "Chem", price: 348000 },
+            { code: "096770", name: "SK이노베이션", sector: "Chem", price: 106000 }, 
+            { code: "011170", name: "롯데케미칼", sector: "Chem", price: 73800 },
+            { code: "009830", name: "한화솔루션", sector: "Chem", price: 27400 }, 
+            { code: "105560", name: "KB금융", sector: "Finance", price: 125900 },
+            { code: "055550", name: "신한지주", sector: "Finance", price: 78300 }, 
+            { code: "000810", name: "삼성화재", sector: "Finance", price: 493500 },
+            { code: "323410", name: "카카오뱅크", sector: "Finance", price: 21900 }, 
+            { code: "207940", name: "삼성바이오로직스", sector: "Bio", price: 1731000 },
+            { code: "068270", name: "셀트리온", sector: "Bio", price: 183700 }, 
+            { code: "000100", name: "유한양행", sector: "Bio", price: 115800 },
+            { code: "004170", name: "신세계", sector: "Retail", price: 248000 }, 
+            { code: "023530", name: "롯데쇼핑", sector: "Retail", price: 74200 },
+            { code: "097950", name: "CJ제일제당", sector: "Food", price: 210000 }, 
+            { code: "352820", name: "HYBE", sector: "Enter", price: 310000 },
+            { code: "035900", name: "JYP Ent.", sector: "Enter", price: 70200 }, 
+            { code: "041510", name: "에스엠", sector: "Enter", price: 117500 },
+            { code: "122870", name: "YG PLUS", sector: "Enter", price: 6720 }
         ];
+
+
+        // [수정] 기업별 맞춤 설명 데이터 (37개 전체)
+        const COMPANY_DESCRIPTIONS = {
+            "005930": "글로벌 메모리 반도체 1위 및 스마트폰, 가전 세계적 기업",
+            "000660": "글로벌 메모리 반도체 2위, HBM 시장 선도 기업",
+            "035420": "국내 1위 검색 포털 및 AI, 커머스 플랫폼 기업",
+            "035720": "국민 메신저 카카오톡 기반의 모바일 라이프 플랫폼",
+            "006400": "소형 배터리 및 전기차용 중대형 배터리 제조 기업",
+            "011070": "모바일용 카메라 모듈 및 첨단 전자 부품 제조사",
+            "005380": "글로벌 TOP3 자동차 완성차 제조업체",
+            "000270": "디자인 경영을 통한 글로벌 자동차 제조업체",
+            "373220": "세계 최고의 기술력을 보유한 전기차 배터리 생산 기업",
+            "003670": "2차전지 양극재 및 음극재 생산 글로벌 소재 기업",
+            "012450": "항공우주 및 방위산업 분야의 대한민국 대표 기업",
+            "079550": "정밀 유도무기 등 첨단 무기 체계 개발 방산업체",
+            "042660": "잠수함 및 특수선 분야 경쟁력을 갖춘 조선 해양 기업",
+            "329180": "세계 1위 조선 기술력을 보유한 중공업 회사",
+            "010140": "고부가가치 선박 및 해양 설비 전문 조선 기업",
+            "066570": "중형 선박 및 PC선 분야 세계 시장 점유율 1위",
+            "005490": "철강을 넘어 2차전지 소재로 도약하는 친환경 미래 소재 기업",
+            "004020": "자동차용 강판 및 건설용 철강재 생산 전기로 제철소",
+            "004600": "세계 최고 수준의 비철금속(아연, 납) 제련 기업",
+            "051910": "석유화학, 첨단소재, 생명과학 분야의 글로벌 화학 기업",
+            "096770": "정유, 화학, 윤활유 및 배터리 사업을 영위하는 에너지 기업",
+            "011170": "다양한 화학 제품을 생산하는 롯데그룹의 화학 계열사",
+            "009830": "태양광 에너지 및 케미칼 소재 전문 기업",
+            "105560": "은행, 증권, 보험 등을 아우르는 국내 최대 금융지주",
+            "055550": "디지털 혁신을 선도하는 글로벌 금융 그룹",
+            "000810": "국내 손해보험 업계를 선도하는 삼성의 금융 계열사",
+            "323410": "모바일 중심의 혁신적인 인터넷 전문 은행",
+            "207940": "글로벌 1위 바이오 의약품 위탁 생산(CMO) 기업",
+            "068270": "바이오 시밀러 및 신약 개발 글로벌 바이오 기업",
+            "000100": "신약 개발(렉라자 등) 성과를 내는 존경받는 제약사",
+            "004170": "백화점 및 패션, 뷰티 사업을 영위하는 유통 공룡",
+            "023530": "백화점, 마트, 슈퍼 등을 운영하는 종합 유통 기업",
+            "097950": "비비고 등 K-푸드 글로벌 확산의 주역인 식품 기업",
+            "352820": "BTS 등 글로벌 아티스트를 보유한 엔터테인먼트 플랫폼",
+            "035900": "트와이스, 스트레이키즈 등 K-POP 아이돌 명가",
+            "041510": "NCT, 에스파 등 독창적 IP를 보유한 K-POP 선두주자",
+            "122870": "음원 유통 및 MD 사업 등을 영위하는 YG 계열사"
+        };
 
         const NEWS_TEMPLATES = {
             'Market': [
@@ -443,7 +487,7 @@
                 startRealtimeSync();
                 subscribeToRankings();
                 showToast(`환영합니다, ${name}님!`, 'success');
-                playSound('buy'); // 로그인 성공음
+                playSound('buy'); 
             } catch (err) {
                 console.error(err);
                 document.getElementById('login-msg').textContent = "로그인 오류: " + err.message;
@@ -706,7 +750,11 @@
             document.getElementById('modal-stock-name').innerText = stock.name;
             document.getElementById('modal-stock-code').innerText = code;
             document.getElementById('modal-sector').innerText = stock.sector + " Sector";
-            document.getElementById('modal-desc').innerText = getCompanyDesc(stock.sector, stock.name);
+            
+            // [수정] 개별 설명 로직 적용
+            const desc = COMPANY_DESCRIPTIONS[code] || "대한민국 대표 우량 기업입니다.";
+            document.getElementById('modal-desc').innerText = desc;
+            
             document.getElementById('trade-qty').value = 1;
 
             updateModalUI();
@@ -714,20 +762,6 @@
 
             renderChart(stock.history || [stock.price], stock.name);
         };
-
-        function getCompanyDesc(sector, name) {
-            const descs = {
-                'IT': "대한민국을 대표하는 최첨단 반도체 및 IT 기술 기업입니다.",
-                'Platform': "전 국민이 사용하는 디지털 플랫폼 서비스를 제공합니다.",
-                'Battery': "전기차 시대의 핵심인 2차 전지를 생산하는 기업입니다.",
-                'Auto': "글로벌 시장에서 활약하는 자동차 제조 기업입니다.",
-                'Defense': "국가 안보를 책임지는 방위 산업 선도 기업입니다.",
-                'Ship': "세계 최고의 기술력을 자랑하는 조선 해양 기업입니다.",
-                'Bio': "인류의 건강을 위한 신약 및 바이오 의약품 개발사입니다.",
-                'Enter': "K-POP 문화를 전 세계로 확산시키는 엔터테인먼트사입니다.",
-            };
-            return descs[sector] || `${name}은(는) 해당 분야에서 꾸준한 성장을 보이고 있습니다.`;
-        }
 
         function renderChart(data, label) {
             const ctx = document.getElementById('stockChart').getContext('2d');
@@ -938,8 +972,6 @@
                 badge.className = "px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700";
             }
             
-            // [삭제됨] simulation-time 업데이트 로직 삭제 (HTML에서 고정됨)
-
             const listEl = document.getElementById('stock-list');
             listEl.innerHTML = ''; 
             
