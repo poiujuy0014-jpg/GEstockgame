@@ -32,7 +32,7 @@
         <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border border-gray-100">
             <div class="text-center mb-8">
                 <h1 class="text-3xl font-bold text-indigo-700 mb-2">📈 대건고 주식 모의투자</h1>
-                <p class="text-gray-500 text-sm">V22: 전체 랭킹 조회</p>
+                <p class="text-gray-500 text-sm">실전 모의투자 (V22 - All Rankings)</p>
             </div>
             
             <form id="login-form" class="space-y-5" onsubmit="return false;">
@@ -97,15 +97,15 @@
 
                 <div class="bg-white rounded-xl shadow p-5">
                     <div class="flex justify-between items-center mb-3 border-b pb-2">
-                        <h2 class="text-lg font-bold text-gray-700">🏆 실시간 전체 랭킹</h2>
-                        <span class="text-xs text-gray-400">자산순</span>
+                        <h2 class="text-lg font-bold text-gray-700">🏆 전체 랭킹 (실시간)</h2>
+                        <span class="text-xs text-gray-400">전체 학생 대상</span>
                     </div>
-                    <div id="ranking-list" class="space-y-2 max-h-[250px] overflow-y-auto pr-1 scrollbar-hide">
-                        <div class="text-center text-xs text-gray-400 py-2">랭킹 집계 중...</div>
+                    <div id="ranking-list" class="space-y-2 max-h-[300px] overflow-y-auto pr-1 scrollbar-hide">
+                        <div class="text-center text-xs text-gray-400 py-2">랭킹 데이터 불러오는 중...</div>
                     </div>
                 </div>
 
-                <div class="bg-white rounded-xl shadow p-6 h-[350px] flex flex-col">
+                <div class="bg-white rounded-xl shadow p-6 h-[300px] flex flex-col">
                     <h2 class="text-lg font-bold text-gray-700 mb-4">내 포트폴리오</h2>
                     <div id="portfolio-list" class="flex-grow overflow-y-auto space-y-2 pr-2 scrollbar-hide">
                         <div class="text-center text-gray-400 py-10">보유 중인 주식이 없습니다.</div>
@@ -131,7 +131,7 @@
                 <div class="bg-white rounded-xl shadow-lg flex flex-col h-[550px]">
                     <div class="p-4 border-b flex justify-between items-center bg-gray-50 rounded-t-xl">
                         <h2 class="text-lg font-bold text-gray-700">KOSPI 주요 종목 (37개)</h2>
-                        <span class="text-xs text-gray-500">* 리스트 고정됨</span>
+                        <span class="text-xs text-gray-500">* 실시간 시세 변동</span>
                     </div>
                     
                     <div class="grid grid-cols-12 gap-2 px-4 py-2 bg-gray-100 text-xs font-bold text-gray-500">
@@ -147,7 +147,7 @@
         </main>
 
         <div id="admin-panel" class="hidden fixed bottom-4 right-4 bg-gray-900 text-white p-4 rounded-xl shadow-2xl z-50 opacity-90 hover:opacity-100 transition border-2 border-yellow-500 w-64 max-h-[80vh] flex flex-col">
-            <h3 class="font-bold text-yellow-400 mb-3 text-center border-b border-gray-700 pb-2">👑 시나리오 컨트롤러</h3>
+            <h3 class="font-bold text-yellow-400 mb-3 text-center border-b border-gray-700 pb-2">👑 관리자 모드</h3>
             
             <div class="flex-grow overflow-y-auto space-y-2 pr-1 scrollbar-hide text-xs">
                 <div class="grid grid-cols-2 gap-2 mb-4">
@@ -155,43 +155,44 @@
                     <button onclick="adminFunc('stop')" class="bg-red-600 hover:bg-red-700 py-2 rounded font-bold">⛔ 마감</button>
                 </div>
                 
-                <div class="text-center text-gray-400 text-[10px] mb-1">- 시나리오 (뉴스송출 -> 5분뒤 주가반영) -</div>
+                <div class="text-center text-gray-400 text-[10px] mb-1">- 시나리오 실행 (5분 딜레이) -</div>
 
                 <button onclick="runScenario(1)" class="w-full text-left px-3 py-2 bg-gray-800 hover:bg-indigo-900 border border-gray-700 rounded transition flex items-center">
-                    <span class="text-yellow-400 font-mono mr-2">오전 9:30</span> 산타랠리 모멘텀 (상승예고)
+                    <span class="text-yellow-400 font-mono mr-2">9:30</span> 산타랠리
                 </button>
                 <button onclick="runScenario(2)" class="w-full text-left px-3 py-2 bg-gray-800 hover:bg-indigo-900 border border-gray-700 rounded transition flex items-center">
-                    <span class="text-yellow-400 font-mono mr-2">오전 10:00</span> 기술적 분석 (하락예고)
+                    <span class="text-yellow-400 font-mono mr-2">10:00</span> 기술적 하락
                 </button>
                 <button onclick="runScenario(3)" class="w-full text-left px-3 py-2 bg-gray-800 hover:bg-indigo-900 border border-gray-700 rounded transition flex items-center">
-                    <span class="text-yellow-400 font-mono mr-2">오전 10:30</span> 환율 수혜 (수출주↑)
+                    <span class="text-yellow-400 font-mono mr-2">10:30</span> 수출주 호재
                 </button>
                 <button onclick="runScenario(4)" class="w-full text-left px-3 py-2 bg-gray-800 hover:bg-indigo-900 border border-gray-700 rounded transition flex items-center">
-                    <span class="text-yellow-400 font-mono mr-2">오전 11:00</span> 어닝시즌 경계 (실적우려)
+                    <span class="text-yellow-400 font-mono mr-2">11:00</span> 실적 충격
                 </button>
                 <button onclick="runScenario(5)" class="w-full text-left px-3 py-2 bg-gray-800 hover:bg-indigo-900 border border-gray-700 rounded transition flex items-center">
-                    <span class="text-yellow-400 font-mono mr-2">오전 11:30</span> 환율 피해 (내수주↓)
+                    <span class="text-yellow-400 font-mono mr-2">11:30</span> 내수주 악재
                 </button>
                 <button onclick="runScenario(6)" class="w-full text-left px-3 py-2 bg-gray-800 hover:bg-indigo-900 border border-gray-700 rounded transition flex items-center">
-                    <span class="text-yellow-400 font-mono mr-2">오후 12:00</span> 기본적 분석 (횡보)
+                    <span class="text-yellow-400 font-mono mr-2">12:00</span> 횡보장
                 </button>
                 <button onclick="runScenario(7)" class="w-full text-left px-3 py-2 bg-gray-800 hover:bg-indigo-900 border border-gray-700 rounded transition flex items-center">
-                    <span class="text-yellow-400 font-mono mr-2">오후 2:00</span> 세금 물량 소화 (반등)
+                    <span class="text-yellow-400 font-mono mr-2">14:00</span> 성장주 반등
                 </button>
                 <button onclick="runScenario(8)" class="w-full text-left px-3 py-2 bg-gray-800 hover:bg-indigo-900 border border-gray-700 rounded transition flex items-center">
-                    <span class="text-yellow-400 font-mono mr-2">오후 2:30</span> 어닝 함정 (조정)
+                    <span class="text-yellow-400 font-mono mr-2">14:30</span> 변동성 확대
                 </button>
                 <button onclick="runScenario(9)" class="w-full text-left px-3 py-2 bg-gray-800 hover:bg-indigo-900 border border-gray-700 rounded transition flex items-center">
-                    <span class="text-yellow-400 font-mono mr-2">오후 3:00</span> 라스트 아워 (급등)
+                    <span class="text-yellow-400 font-mono mr-2">15:00</span> 급등장
                 </button>
                 <button onclick="runScenario(10)" class="w-full text-left px-3 py-2 bg-gray-800 hover:bg-indigo-900 border border-gray-700 rounded transition flex items-center">
-                    <span class="text-yellow-400 font-mono mr-2">오후 3:30</span> 찬바람 배당주 (관리)
+                    <span class="text-yellow-400 font-mono mr-2">15:30</span> 배당주 관리
                 </button>
                 <button onclick="runScenario(11)" class="w-full text-left px-3 py-2 bg-gray-800 hover:bg-indigo-900 border border-gray-700 rounded transition flex items-center">
-                    <span class="text-yellow-400 font-mono mr-2">오후 4:00</span> 윈도우 드레싱 (폭등)
+                    <span class="text-yellow-400 font-mono mr-2">16:00</span> 폭등 마감
                 </button>
 
-                <div class="h-4"></div>
+                <div class="h-4 border-b border-gray-700 mb-2"></div>
+                <button onclick="triggerRandomNews()" class="w-full bg-blue-700 hover:bg-blue-600 py-2 rounded font-bold mb-2">🎲 랜덤 뉴스 (커스텀)</button>
                 <button onclick="adminFunc('reset')" class="w-full bg-black border border-red-500 text-red-500 hover:bg-red-900 py-2 rounded">⚠️ 데이터 전체 초기화</button>
             </div>
         </div>
@@ -361,71 +362,7 @@
             { code: "122870", name: "와이지엔터테인먼트", sector: "Enter", price: 63600 }
         ];
 
-        const SCENARIOS_DATA = {
-            1: { time: "오전 9:30", type: "forecast", text: "[전망] 산타랠리 모멘텀: 기관 대규모 매수세 유입 조짐... 대형주 강세 예상", 
-                 targets: ["005930", "000660", "005380", "035420", "005490"], delta: 0.18 }, 
-            2: { time: "오전 10:00", type: "forecast", text: "[전망] 기술적 분석: 단기 급등 부담감에 차익 매물 출회 가능성 대두", 
-                 targets: ["207940", "068270", "000270", "011070", "035720"], delta: -0.15 }, 
-            3: { time: "오전 10:30", type: "forecast", text: "[전망] 환율 수혜: 원/달러 환율 상승으로 수출주(자동차, 조선) 실적 개선 기대", 
-                 targets: ["005380", "005930", "329180", "012450", "010140"], delta: 0.15 }, 
-            4: { time: "오전 11:00", type: "forecast", text: "[전망] 어닝시즌 경계: 2차전지 및 화학 섹터 실적 충격(어닝 쇼크) 주의보", 
-                 targets: ["006400", "051910", "003670", "096770", "009830"], delta: -0.20 }, 
-            5: { time: "오전 11:30", type: "forecast", text: "[전망] 환율 피해: 원자재 수입 비용 증가로 내수 및 식품 기업 수익성 악화 우려", 
-                 targets: ["097950", "004170", "023530", "000100"], delta: -0.12 }, 
-            6: { time: "오후 12:00", type: "forecast", text: "[전망] 기본적 분석: 점심시간 거래량 감소 속 주가 횡보 및 관망세 예상", 
-                 targets: ["105560", "055550", "000810", "004600", "004020"], delta: 0.005 }, 
-            7: { time: "오후 2:00", type: "forecast", text: "[전망] 세금 회피 물량 소화: 낙폭 과대 성장주(플랫폼, 엔터) 반등 시도 전망", 
-                 targets: ["035720", "035420", "035900", "352820", "323410"], delta: 0.20 }, 
-            8: { time: "오후 2:30", type: "forecast", text: "[전망] 어닝 시즌의 함정: 실적 가이던스 하향 조정으로 관련주 변동성 확대 주의", 
-                 targets: ["373220", "079550", "042660", "066570", "041510"], delta: -0.22 }, 
-            9: { time: "오후 3:00", type: "forecast", text: "[전망] 라스트 아워: 장 막판 산타랠리 확신 매수세 유입... 지수 상승폭 확대 예상", 
-                 targets: ["005930", "000660", "005380", "005490", "004600"], delta: 0.18 }, 
-            10: { time: "오후 3:30", type: "forecast", text: "[전망] 찬바람엔 배당주: 연말 배당 기대감으로 금융 및 전통주 종가 관리 매수세 유입", 
-                  targets: ["105560", "000810", "055550", "004020", "000270"], delta: 0.05 }, 
-            11: { time: "오후 4:00", type: "forecast", text: "[전망] 윈도우 드레싱: 기관 수익률 제고를 위한 막판 대형주 집중 매수 예상", 
-                  targets: ["005930", "005380", "105560", "207940", "005490", "035420"], delta: 0.10 } 
-        };
-
-        const COMPANY_DESCRIPTIONS = {
-            "005930": "글로벌 메모리 반도체 1위 및 스마트폰, 가전 세계적 기업",
-            "000660": "글로벌 메모리 반도체 2위, HBM 시장 선도 기업",
-            "035420": "국내 1위 검색 포털 및 AI, 커머스 플랫폼 기업",
-            "035720": "국민 메신저 카카오톡 기반의 모바일 라이프 플랫폼",
-            "006400": "소형 배터리 및 전기차용 중대형 배터리 제조 기업",
-            "011070": "모바일용 카메라 모듈 및 첨단 전자 부품 제조사",
-            "005380": "글로벌 TOP3 자동차 완성차 제조업체",
-            "000270": "디자인 경영을 통한 글로벌 자동차 제조업체",
-            "373220": "세계 최고의 기술력을 보유한 전기차 배터리 생산 기업",
-            "003670": "2차전지 양극재 및 음극재 생산 글로벌 소재 기업",
-            "012450": "항공우주 및 방위산업 분야의 대한민국 대표 기업",
-            "079550": "정밀 유도무기 등 첨단 무기 체계 개발 방산업체",
-            "042660": "잠수함 및 특수선 분야 경쟁력을 갖춘 조선 해양 기업",
-            "329180": "세계 1위 조선 기술력을 보유한 중공업 회사",
-            "010140": "고부가가치 선박 및 해양 설비 전문 조선 기업",
-            "066570": "중형 선박 및 PC선 분야 세계 시장 점유율 1위",
-            "005490": "철강을 넘어 2차전지 소재로 도약하는 친환경 미래 소재 기업",
-            "004020": "자동차용 강판 및 건설용 철강재 생산 전기로 제철소",
-            "004600": "세계 최고 수준의 비철금속(아연, 납) 제련 기업",
-            "051910": "석유화학, 첨단소재, 생명과학 분야의 글로벌 화학 기업",
-            "096770": "정유, 화학, 윤활유 및 배터리 사업을 영위하는 에너지 기업",
-            "011170": "다양한 화학 제품을 생산하는 롯데그룹의 화학 계열사",
-            "009830": "태양광 에너지 및 케미칼 소재 전문 기업",
-            "105560": "은행, 증권, 보험 등을 아우르는 국내 최대 금융지주",
-            "055550": "디지털 혁신을 선도하는 글로벌 금융 그룹",
-            "000810": "국내 손해보험 업계를 선도하는 삼성의 금융 계열사",
-            "323410": "모바일 중심의 혁신적인 인터넷 전문 은행",
-            "207940": "글로벌 1위 바이오 의약품 위탁 생산(CMO) 기업",
-            "068270": "바이오 시밀러 및 신약 개발 글로벌 바이오 기업",
-            "000100": "신약 개발(렉라자 등) 성과를 내는 존경받는 제약사",
-            "004170": "백화점 및 패션, 뷰티 사업을 영위하는 유통 공룡",
-            "023530": "백화점, 마트, 슈퍼 등을 운영하는 종합 유통 기업",
-            "097950": "비비고 등 K-푸드 글로벌 확산의 주역인 식품 기업",
-            "352820": "BTS 등 글로벌 아티스트를 보유한 엔터테인먼트 플랫폼",
-            "035900": "트와이스, 스트레이키즈 등 K-POP 아이돌 명가",
-            "041510": "NCT, 에스파 등 독창적 IP를 보유한 K-POP 선두주자",
-            "122870": "블랙핑크, 베이비몬스터 등 글로벌 IP를 보유한 엔터 기업"
-        };
-
+        // 🟢 방금 선생님이 제공하신 뉴스 템플릿 통합 완료
         const NEWS_TEMPLATES = {
             'Market': [
                 { text: "미국 연준, 기준금리 동결 발표... 시장 안도 랠리", type: "good", impact: 0.03 },
@@ -512,12 +449,77 @@
             ]
         };
 
+        const SCENARIOS_DATA = {
+            1: { time: "오전 9:30", type: "forecast", text: "[전망] 산타랠리 모멘텀: 기관 대규모 매수세 유입 조짐... 대형주 강세 예상", 
+                 targets: ["005930", "000660", "005380", "035420", "005490"], delta: 0.18 }, 
+            2: { time: "오전 10:00", type: "forecast", text: "[전망] 기술적 분석: 단기 급등 부담감에 차익 매물 출회 가능성 대두", 
+                 targets: ["207940", "068270", "000270", "011070", "035720"], delta: -0.15 }, 
+            3: { time: "오전 10:30", type: "forecast", text: "[전망] 환율 수혜: 원/달러 환율 상승으로 수출주(자동차, 조선) 실적 개선 기대", 
+                 targets: ["005380", "005930", "329180", "012450", "010140"], delta: 0.15 }, 
+            4: { time: "오전 11:00", type: "forecast", text: "[전망] 어닝시즌 경계: 2차전지 및 화학 섹터 실적 충격(어닝 쇼크) 주의보", 
+                 targets: ["006400", "051910", "003670", "096770", "009830"], delta: -0.20 }, 
+            5: { time: "오전 11:30", type: "forecast", text: "[전망] 환율 피해: 원자재 수입 비용 증가로 내수 및 식품 기업 수익성 악화 우려", 
+                 targets: ["097950", "004170", "023530", "000100"], delta: -0.12 }, 
+            6: { time: "오후 12:00", type: "forecast", text: "[전망] 기본적 분석: 점심시간 거래량 감소 속 주가 횡보 및 관망세 예상", 
+                 targets: ["105560", "055550", "000810", "004600", "004020"], delta: 0.005 }, 
+            7: { time: "오후 2:00", type: "forecast", text: "[전망] 세금 회피 물량 소화: 낙폭 과대 성장주(플랫폼, 엔터) 반등 시도 전망", 
+                 targets: ["035720", "035420", "035900", "352820", "323410"], delta: 0.20 }, 
+            8: { time: "오후 2:30", type: "forecast", text: "[전망] 어닝 시즌의 함정: 실적 가이던스 하향 조정으로 관련주 변동성 확대 주의", 
+                 targets: ["373220", "079550", "042660", "066570", "041510"], delta: -0.22 }, 
+            9: { time: "오후 3:00", type: "forecast", text: "[전망] 라스트 아워: 장 막판 산타랠리 확신 매수세 유입... 지수 상승폭 확대 예상", 
+                 targets: ["005930", "000660", "005380", "005490", "004600"], delta: 0.18 }, 
+            10: { time: "오후 3:30", type: "forecast", text: "[전망] 찬바람엔 배당주: 연말 배당 기대감으로 금융 및 전통주 종가 관리 매수세 유입", 
+                  targets: ["105560", "000810", "055550", "004020", "000270"], delta: 0.05 }, 
+            11: { time: "오후 4:00", type: "forecast", text: "[전망] 윈도우 드레싱: 기관 수익률 제고를 위한 막판 대형주 집중 매수 예상", 
+                  targets: ["005930", "005380", "105560", "207940", "005490", "035420"], delta: 0.10 } 
+        };
+
+        const COMPANY_DESCRIPTIONS = {
+            "005930": "글로벌 메모리 반도체 1위 및 스마트폰, 가전 세계적 기업",
+            "000660": "글로벌 메모리 반도체 2위, HBM 시장 선도 기업",
+            "035420": "국내 1위 검색 포털 및 AI, 커머스 플랫폼 기업",
+            "035720": "국민 메신저 카카오톡 기반의 모바일 라이프 플랫폼",
+            "006400": "소형 배터리 및 전기차용 중대형 배터리 제조 기업",
+            "011070": "모바일용 카메라 모듈 및 첨단 전자 부품 제조사",
+            "005380": "글로벌 TOP3 자동차 완성차 제조업체",
+            "000270": "디자인 경영을 통한 글로벌 자동차 제조업체",
+            "373220": "세계 최고의 기술력을 보유한 전기차 배터리 생산 기업",
+            "003670": "2차전지 양극재 및 음극재 생산 글로벌 소재 기업",
+            "012450": "항공우주 및 방위산업 분야의 대한민국 대표 기업",
+            "079550": "정밀 유도무기 등 첨단 무기 체계 개발 방산업체",
+            "042660": "잠수함 및 특수선 분야 경쟁력을 갖춘 조선 해양 기업",
+            "329180": "세계 1위 조선 기술력을 보유한 중공업 회사",
+            "010140": "고부가가치 선박 및 해양 설비 전문 조선 기업",
+            "066570": "중형 선박 및 PC선 분야 세계 시장 점유율 1위",
+            "005490": "철강을 넘어 2차전지 소재로 도약하는 친환경 미래 소재 기업",
+            "004020": "자동차용 강판 및 건설용 철강재 생산 전기로 제철소",
+            "004600": "세계 최고 수준의 비철금속(아연, 납) 제련 기업",
+            "051910": "석유화학, 첨단소재, 생명과학 분야의 글로벌 화학 기업",
+            "096770": "정유, 화학, 윤활유 및 배터리 사업을 영위하는 에너지 기업",
+            "011170": "다양한 화학 제품을 생산하는 롯데그룹의 화학 계열사",
+            "009830": "태양광 에너지 및 케미칼 소재 전문 기업",
+            "105560": "은행, 증권, 보험 등을 아우르는 국내 최대 금융지주",
+            "055550": "디지털 혁신을 선도하는 글로벌 금융 그룹",
+            "000810": "국내 손해보험 업계를 선도하는 삼성의 금융 계열사",
+            "323410": "모바일 중심의 혁신적인 인터넷 전문 은행",
+            "207940": "글로벌 1위 바이오 의약품 위탁 생산(CMO) 기업",
+            "068270": "바이오 시밀러 및 신약 개발 글로벌 바이오 기업",
+            "000100": "신약 개발(렉라자 등) 성과를 내는 존경받는 제약사",
+            "004170": "백화점 및 패션, 뷰티 사업을 영위하는 유통 공룡",
+            "023530": "백화점, 마트, 슈퍼 등을 운영하는 종합 유통 기업",
+            "097950": "비비고 등 K-푸드 글로벌 확산의 주역인 식품 기업",
+            "352820": "BTS 등 글로벌 아티스트를 보유한 엔터테인먼트 플랫폼",
+            "035900": "트와이스, 스트레이키즈 등 K-POP 아이돌 명가",
+            "041510": "NCT, 에스파 등 독창적 IP를 보유한 K-POP 선두주자",
+            "122870": "블랙핑크, 베이비몬스터 등 글로벌 IP를 보유한 엔터 기업"
+        };
+
         let currentUser = null;
         let marketData = {}; 
         let userPortfolio = { cash: 50000000, holdings: {} };
         let tradeState = { type: 'buy', code: null };
         let gameState = { day: 1, isOpen: false, gameVersion: 0, time: "09:00" }; 
-        let allUsersCache = [];
+        let allUsersCache = []; // 전체 랭킹용 캐시
         let chartInstance = null;
 
         window.showToast = (message, type = 'info') => {
@@ -527,7 +529,7 @@
             if(type === 'success') bgClass = "bg-green-600";
             if(type === 'error') bgClass = "bg-red-600";
             if(type === 'warning') bgClass = "bg-orange-500";
-            if(type === 'forecast') bgClass = "bg-purple-600"; // 전망 뉴스 색상 (보라색)
+            if(type === 'forecast') bgClass = "bg-purple-600"; 
 
             el.className = `toast-enter transform transition-all duration-300 pointer-events-auto flex items-center p-4 rounded-lg shadow-lg text-white ${bgClass}`;
             let icon = "ℹ️";
@@ -539,7 +541,6 @@
             el.innerHTML = `<span class="text-xl mr-3">${icon}</span><span class="font-medium text-sm">${message}</span>`;
             container.appendChild(el);
             
-            // 사운드 재생
             if(type === 'error' || type === 'warning') playSound('error');
             
             setTimeout(() => {
@@ -581,7 +582,7 @@
                 document.getElementById('game-screen').classList.remove('hidden');
                 setupUI();
                 startRealtimeSync();
-                subscribeToRankings();
+                subscribeToRankings(); // 전체 랭킹 구독
                 showToast(`환영합니다, ${name}님!`, 'success');
                 playSound('buy'); 
             } catch (err) {
@@ -621,6 +622,7 @@
             });
         }
         
+        // V22 핵심: 전체 사용자 랭킹 구독
         function subscribeToRankings() {
             const q = query(collection(db, `artifacts/${appId}/users`));
             onSnapshot(q, (snapshot) => {
@@ -635,6 +637,7 @@
         function renderRankings() {
             const listEl = document.getElementById('ranking-list');
             if (Object.keys(marketData).length === 0 || allUsersCache.length === 0) return;
+            
             const rankedUsers = allUsersCache.map(user => {
                 let stockVal = 0;
                 if (user.holdings) {
@@ -645,16 +648,19 @@
                 }
                 return { name: user.name, total: (user.cash || 0) + stockVal, role: user.role };
             });
+
             rankedUsers.sort((a, b) => b.total - a.total);
+            
             listEl.innerHTML = '';
-            // slice(0, 10) 제거 -> 전체 인원 렌더링
             rankedUsers.forEach((u, index) => { 
                 const rank = index + 1;
                 let rankClass = "bg-gray-100 text-gray-600";
                 if(rank === 1) rankClass = "gold-rank font-bold";
                 else if(rank === 2) rankClass = "silver-rank font-bold";
                 else if(rank === 3) rankClass = "bronze-rank font-bold";
+                
                 const isMe = (u.name === currentUser.name) ? "border-2 border-indigo-500" : "";
+                
                 const div = document.createElement('div');
                 div.className = `flex justify-between items-center p-2 rounded-lg text-sm ${isMe} ${index < 3 ? 'bg-opacity-90' : 'bg-gray-50'}`;
                 div.innerHTML = `<div class="flex items-center space-x-2"><span class="w-6 h-6 flex items-center justify-center rounded-full text-xs ${rankClass}">${rank}</span><span class="font-medium text-gray-800">${u.name}</span></div><span class="font-bold text-gray-600">${Math.round(u.total).toLocaleString()}</span>`;
@@ -692,34 +698,89 @@
             }
         };
 
-        // [시나리오 실행 - 5분 지연 로직]
+        // 커스텀 랜덤 뉴스 (V22)
+        window.triggerRandomNews = async () => {
+            if (currentUser.role !== 'admin') return;
+
+            const codes = Object.keys(marketData);
+            if(codes.length === 0) return;
+            const randomCode = codes[Math.floor(Math.random() * codes.length)];
+            const stock = marketData[randomCode];
+            
+            // 섹터별 뉴스 템플릿 선택
+            let templateList = NEWS_TEMPLATES[stock.sector] || NEWS_TEMPLATES['Default'];
+            if(Math.random() < 0.2) templateList = NEWS_TEMPLATES['Market']; // 20% 확률로 시장 전체 뉴스
+
+            const template = templateList[Math.floor(Math.random() * templateList.length)];
+            const newsText = template.text.replace("{name}", stock.name);
+            
+            // 뉴스 추가
+            const newsRef = doc(db, `artifacts/${appId}/public/news`);
+            const newsSnap = await getDoc(newsRef);
+            let currentNews = newsSnap.exists() ? newsSnap.data().items : [];
+            const newEvent = { time: "속보", text: newsText, type: template.type };
+            const newNewsList = [newEvent, ...currentNews].slice(0, 20);
+            await updateDoc(newsRef, { items: newNewsList });
+
+            // 주가 반영
+            const marketRef = doc(db, `artifacts/${appId}/public/market_state`);
+            const updates = {};
+            const changePct = template.impact * (0.8 + Math.random() * 0.4); 
+            
+            if (templateList === NEWS_TEMPLATES['Market']) {
+                // 시장 전체 영향
+                codes.forEach(c => {
+                    const s = marketData[c];
+                    let p = Math.round(s.price * (1 + changePct));
+                    if(p < 1) p = 1;
+                    let h = s.history || [];
+                    h.push(p); if(h.length > 30) h.shift();
+                    updates[`stocks.${c}.price`] = p;
+                    updates[`stocks.${c}.change`] = p - s.basePrice;
+                    updates[`stocks.${c}.rate`] = ((p - s.basePrice) / s.basePrice) * 100;
+                    updates[`stocks.${c}.history`] = h;
+                });
+            } else {
+                // 개별 종목 영향
+                let p = Math.round(stock.price * (1 + changePct));
+                if(p < 1) p = 1;
+                let h = stock.history || [];
+                h.push(p); if(h.length > 30) h.shift();
+                updates[`stocks.${randomCode}.price`] = p;
+                updates[`stocks.${randomCode}.change`] = p - stock.basePrice;
+                updates[`stocks.${randomCode}.rate`] = ((p - stock.basePrice) / stock.basePrice) * 100;
+                updates[`stocks.${randomCode}.history`] = h;
+            }
+            
+            await updateDoc(marketRef, updates);
+            showToast("🎲 랜덤 뉴스 송출 및 주가 반영 완료!", 'success');
+        };
+
         window.runScenario = async (scenarioId) => {
             if (currentUser.role !== 'admin') return;
             const scenario = SCENARIOS_DATA[scenarioId];
             if (!scenario) return;
 
-            // 1. 뉴스 먼저 송출 (전망/예고 형태, 보라색)
             const newsRef = doc(db, `artifacts/${appId}/public/news`);
             const newsSnap = await getDoc(newsRef);
             let currentNews = newsSnap.exists() ? newsSnap.data().items : [];
             
             const newEvent = {
-                time: scenario.time, // 예: 오전 9:30
+                time: scenario.time, 
                 text: scenario.text,
-                type: 'forecast' // 보라색으로 표시될 타입
+                type: 'forecast' 
             };
             const newNewsList = [newEvent, ...currentNews].slice(0, 20);
             await updateDoc(newsRef, { items: newNewsList });
 
             showToast(`[예고] ${scenario.time} 시나리오 뉴스 송출 완료. (주가 반영 5분 대기)`, 'forecast');
 
-            // 2. 5분 (300,000ms) 지연 후 실제 주가 반영
             setTimeout(async () => {
                 const updates = {};
                 
                 Object.keys(marketData).forEach(code => {
                     const stock = marketData[code];
-                    let changePct = (Math.random() * 0.02) - 0.01; 
+                    let changePct = (Math.random() * 0.02) - 0.01; // 기본 랜덤
 
                     if (scenario.targets.includes(code)) {
                         changePct = scenario.delta * (0.9 + Math.random() * 0.2); 
@@ -741,10 +802,9 @@
                 const marketRef = doc(db, `artifacts/${appId}/public/market_state`);
                 await updateDoc(marketRef, updates);
                 
-                // (옵션) 관리자에게만 알림
                 showToast(`[반영] ${scenario.time} 시나리오 주가 변동 적용됨!`, 'warning');
 
-            }, 300000); // 300,000ms = 5분
+            }, 300000); // 5분
         };
 
         async function resetGameGlobal() {
@@ -957,7 +1017,6 @@
                 badge.innerText = "장 마감";
                 badge.className = "px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700";
             }
-            // 시간 표시 로직 삭제됨
             const listEl = document.getElementById('stock-list');
             listEl.innerHTML = ''; 
             INITIAL_STOCKS.forEach(initStock => {
@@ -1006,17 +1065,16 @@
             if (newsList.length > 0) {
                 const latest = newsList[0];
                 let typeIcon = '⚪ [전망]';
-                // 아이콘 및 텍스트 수정
                 if(latest.type === 'good') typeIcon = '🔴 [호재]';
                 else if(latest.type === 'bad') typeIcon = '🔵 [악재]';
-                else if(latest.type === 'forecast') typeIcon = '🔮 [전망]'; // 보라색 아이콘
+                else if(latest.type === 'forecast') typeIcon = '🔮 [전망]';
 
                 ticker.innerText = `${typeIcon} ${latest.text}`;
                 
                 if (window.lastNewsTime !== latest.time) {
                     if (latest.type === 'good') playSound('news_good');
                     else if (latest.type === 'bad') playSound('news_bad');
-                    else if (latest.type === 'forecast') playSound('news_forecast'); // 전망 사운드
+                    else if (latest.type === 'forecast') playSound('news_forecast'); 
                     else playSound('news_normal');
                     window.lastNewsTime = latest.time;
                 }
@@ -1027,7 +1085,7 @@
                     let colorClass = "";
                     if(news.type === 'good') icon = '🔴';
                     else if(news.type === 'bad') icon = '🔵';
-                    else if(news.type === 'forecast') { icon = '🟣'; colorClass = "text-purple-600 font-bold"; } // 목록에서도 보라색 강조
+                    else if(news.type === 'forecast') { icon = '🔮'; colorClass = "text-purple-600 font-bold"; }
 
                     const div = document.createElement('div');
                     div.className = "p-2 border-b border-gray-100 last:border-0";
