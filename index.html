@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>대건고 주식 모의투자 (V21 - Forecast & Delay)</title>
+    <title>대건고 주식 모의투자 (V22 - All Rankings)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -32,7 +32,7 @@
         <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border border-gray-100">
             <div class="text-center mb-8">
                 <h1 class="text-3xl font-bold text-indigo-700 mb-2">📈 대건고 주식 모의투자</h1>
-                <p class="text-gray-500 text-sm">V21: 시나리오 예고제 (5분 지연 반영)</p>
+                <p class="text-gray-500 text-sm">V22: 전체 랭킹 조회</p>
             </div>
             
             <form id="login-form" class="space-y-5" onsubmit="return false;">
@@ -64,7 +64,7 @@
                 <div class="flex items-center space-x-4">
                     <h1 class="text-xl font-bold text-gray-800 hidden sm:block">모의투자</h1>
                     <span id="market-status-badge" class="px-3 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-500">장 준비 중</span>
-                    </div>
+                </div>
                 <div class="flex items-center space-x-4">
                     <div class="text-right">
                         <p id="user-name-display" class="text-sm font-bold text-gray-800">사용자</p>
@@ -97,10 +97,10 @@
 
                 <div class="bg-white rounded-xl shadow p-5">
                     <div class="flex justify-between items-center mb-3 border-b pb-2">
-                        <h2 class="text-lg font-bold text-gray-700">🏆 실시간 부자 랭킹</h2>
+                        <h2 class="text-lg font-bold text-gray-700">🏆 실시간 전체 랭킹</h2>
                         <span class="text-xs text-gray-400">자산순</span>
                     </div>
-                    <div id="ranking-list" class="space-y-2">
+                    <div id="ranking-list" class="space-y-2 max-h-[250px] overflow-y-auto pr-1 scrollbar-hide">
                         <div class="text-center text-xs text-gray-400 py-2">랭킹 집계 중...</div>
                     </div>
                 </div>
@@ -309,7 +309,7 @@
             else if (type === 'news_good') { beep(600, 'sine', 0.1, 0.1); setTimeout(() => beep(900, 'sine', 0.1, 0.1), 100); setTimeout(() => beep(1200, 'sine', 0.3, 0.1), 200); }
             else if (type === 'news_bad') { beep(800, 'sawtooth', 0.1, 0.1); setTimeout(() => beep(600, 'sawtooth', 0.1, 0.1), 100); setTimeout(() => beep(400, 'sawtooth', 0.3, 0.1), 200); }
             else if (type === 'news_normal') { beep(600, 'square', 0.1, 0.05); setTimeout(() => beep(800, 'square', 0.1, 0.05), 150); } 
-            else if (type === 'news_forecast') { beep(500, 'sine', 0.2, 0.1); setTimeout(() => beep(700, 'sine', 0.3, 0.1), 200); } // 전망 뉴스 사운드
+            else if (type === 'news_forecast') { beep(500, 'sine', 0.2, 0.1); setTimeout(() => beep(700, 'sine', 0.3, 0.1), 200); } 
             else if (type === 'error') { beep(150, 'sawtooth', 0.3, 0.1); }
         };
 
@@ -361,8 +361,6 @@
             { code: "122870", name: "와이지엔터테인먼트", sector: "Enter", price: 63600 }
         ];
 
-        // 시나리오 데이터: 뉴스 내용은 "전망/예상" 톤으로 수정됨
-        // delta: 실제 5분 뒤 반영될 등락폭
         const SCENARIOS_DATA = {
             1: { time: "오전 9:30", type: "forecast", text: "[전망] 산타랠리 모멘텀: 기관 대규모 매수세 유입 조짐... 대형주 강세 예상", 
                  targets: ["005930", "000660", "005380", "035420", "005490"], delta: 0.18 }, 
@@ -649,7 +647,8 @@
             });
             rankedUsers.sort((a, b) => b.total - a.total);
             listEl.innerHTML = '';
-            rankedUsers.slice(0, 10).forEach((u, index) => { 
+            // slice(0, 10) 제거 -> 전체 인원 렌더링
+            rankedUsers.forEach((u, index) => { 
                 const rank = index + 1;
                 let rankClass = "bg-gray-100 text-gray-600";
                 if(rank === 1) rankClass = "gold-rank font-bold";
