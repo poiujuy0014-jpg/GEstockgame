@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>대건고 주식 모의투자 (V17 - Final Fix)</title>
+    <title>대건고 주식 모의투자 (V18 - Fixed & Updated)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -32,7 +32,7 @@
         <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border border-gray-100">
             <div class="text-center mb-8">
                 <h1 class="text-3xl font-bold text-indigo-700 mb-2">📈 대건고 주식 모의투자</h1>
-                <p class="text-gray-500 text-sm">실전 모의투자 플랫폼 (사운드 탑재)</p>
+                <p class="text-gray-500 text-sm">실전 모의투자 플랫폼 (V18)</p>
             </div>
             
             <form id="login-form" class="space-y-5" onsubmit="return false;">
@@ -48,11 +48,12 @@
                     로그인 및 접속
                 </button>
             </form>
+            
             <p id="login-msg" class="mt-4 text-center text-sm font-medium text-red-500 min-h-[20px]"></p>
             
             <div class="mt-6 pt-4 border-t border-gray-100 text-xs text-gray-400 text-center">
                 <p>학교 도메인(@pess.cnehs.kr) 이메일로 로그인하세요.</p>
-                <p id="db-status" class="mt-2 font-bold text-orange-500">데이터베이스 연결 시도 중....</p>
+                <p id="db-status" class="mt-2 font-bold text-orange-500">데이터베이스 연결 시도 중...</p>
             </div>
         </div>
     </div>
@@ -281,13 +282,13 @@
             { name: "강은성", email: "rkd2022@pess.cnehs.kr" },
         ];
 
-       // [수정] 최신 주가 반영 (2024~2025 현실적 가격대)
+        // [수정 완료] 콤마(,)를 모두 제거한 깨끗한 데이터 (에러 원인 해결)
         const INITIAL_STOCKS = [
             { code: "005930", name: "삼성전자", sector: "IT", price: 110000 }, 
             { code: "000660", name: "SK하이닉스", sector: "IT", price: 577000 },
             { code: "035420", name: "NAVER", sector: "Platform", price: 237000 }, 
             { code: "035720", name: "카카오", sector: "Platform", price: 58700 },
-            { code: "006400", name: "삼성SDI", sector: "Battery", price: 283,500 }, 
+            { code: "006400", name: "삼성SDI", sector: "Battery", price: 283500 }, 
             { code: "011070", name: "LG이노텍", sector: "IT", price: 278000 },
             { code: "005380", name: "현대차", sector: "Auto", price: 288500 }, 
             { code: "000270", name: "기아", sector: "Auto", price: 120700 },
@@ -321,7 +322,6 @@
             { code: "041510", name: "에스엠", sector: "Enter", price: 117500 },
             { code: "122870", name: "YG PLUS", sector: "Enter", price: 6720 }
         ];
-
 
         // 기업별 맞춤 설명 데이터 (37개 전체)
         const COMPANY_DESCRIPTIONS = {
@@ -364,7 +364,7 @@
             "122870": "음원 유통 및 MD 사업 등을 영위하는 YG 계열사"
         };
 
-        // [뉴스 대폭 추가]
+        // 뉴스 템플릿 (다양화 적용)
         const NEWS_TEMPLATES = {
             'Market': [
                 { text: "미국 연준, 기준금리 동결 발표... 시장 안도 랠리", type: "good", impact: 0.03 },
@@ -664,8 +664,6 @@
                     return;
                 }
                 const updates = {};
-                
-                // [확률 상향] 15%로 증가
                 const triggerNews = Math.random() < 0.15; 
                 let affectedStocks = [];
                 let newsImpactVal = 0;
