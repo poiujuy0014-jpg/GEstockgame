@@ -3,21 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>대건고 주식 모의투자 (V28 - Better Sound & News)</title>
+    <title>대건고 주식 모의투자 (V29 - Final Optimized)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap');
         body { font-family: 'Noto Sans KR', sans-serif; background-color: #f3f4f6; }
         .market-open { color: #16a34a; font-weight: 700; }
         .market-closed { color: #dc2626; font-weight: 700; }
         .price-up { color: #dc2626; } 
         .price-down { color: #2563eb; } 
         .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .gold-rank { background: linear-gradient(135deg, #ffd700 0%, #fdb931 100%); color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
-        .silver-rank { background: linear-gradient(135deg, #e0e0e0 0%, #bdbdbd 100%); color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
-        .bronze-rank { background: linear-gradient(135deg, #cd7f32 0%, #a0522d 100%); color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
         
+        /* 랭킹 팝업용 스크롤바 커스텀 */
+        .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
         .toast-enter { animation: slideIn 0.3s ease-out forwards; }
@@ -39,7 +42,7 @@
         <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border border-gray-100">
             <div class="text-center mb-8">
                 <h1 class="text-3xl font-bold text-indigo-700 mb-2">📈 대건고 주식 모의투자</h1>
-                <p class="text-gray-500 text-sm">실시간 뉴스 & 시나리오 시스템 (V28)</p>
+                <p class="text-gray-500 text-sm">실시간 뉴스 & 시나리오 시스템 (V29)</p>
             </div>
             
             <form id="login-form" class="space-y-5" onsubmit="return false;">
@@ -102,18 +105,7 @@
                     </div>
                 </div>
 
-                <div class="bg-white rounded-xl shadow p-5">
-                    <div class="flex justify-between items-center mb-3 border-b pb-2">
-                        <h2 class="text-lg font-bold text-gray-700">🏆 전체 랭킹 (실시간)</h2>
-                        <span class="text-xs text-gray-400">전체 학생 대상</span>
-                    </div>
-                    <div id="ranking-list" class="space-y-2 max-h-[300px] overflow-y-auto pr-1 scrollbar-hide">
-                        <div class="text-center text-xs text-gray-400 py-2">랭킹 데이터 불러오는 중...</div>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-xl shadow p-6 h-[300px] flex flex-col">
-                    <h2 class="text-lg font-bold text-gray-700 mb-4">내 포트폴리오</h2>
+                <div class="bg-white rounded-xl shadow p-6 h-[500px] flex flex-col"> <h2 class="text-lg font-bold text-gray-700 mb-4">내 포트폴리오</h2>
                     <div id="portfolio-list" class="flex-grow overflow-y-auto space-y-2 pr-2 scrollbar-hide">
                         <div class="text-center text-gray-400 py-10">보유 중인 주식이 없습니다.</div>
                     </div>
@@ -163,6 +155,13 @@
                 <div class="grid grid-cols-2 gap-2 mb-4">
                     <button onclick="adminFunc('start')" class="bg-green-600 hover:bg-green-700 py-2 rounded font-bold">▶ 개장</button>
                     <button onclick="adminFunc('stop')" class="bg-red-600 hover:bg-red-700 py-2 rounded font-bold">⛔ 마감</button>
+                </div>
+
+                <div class="mt-2 mb-4 pt-2 border-t border-gray-700">
+                    <button onclick="openBigRanking()" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold py-3 rounded shadow-lg transform transition hover:scale-105">
+                        📺 대형 랭킹판 띄우기
+                    </button>
+                    <p class="text-[10px] text-gray-400 mt-1 text-center">클릭 시 실시간 랭킹 집계 (TV 송출용)</p>
                 </div>
 
                 <div class="text-center text-gray-400 text-[10px] mb-1">- 수업 시나리오 (버튼 클릭) -</div>
@@ -245,10 +244,38 @@
         </div>
     </div>
 
+    <div id="big-ranking-modal" class="hidden fixed inset-0 bg-black bg-opacity-80 z-[100] flex justify-center items-center backdrop-blur-sm">
+        <div class="bg-white w-[90%] h-[90%] rounded-2xl shadow-2xl p-8 flex flex-col relative overflow-hidden">
+            
+            <div class="flex justify-between items-center border-b-4 border-indigo-500 pb-4 mb-4">
+                <h1 class="text-4xl font-black text-gray-800 tracking-tight">👑 실시간 부자 랭킹 TOP 50</h1>
+                <button onclick="closeBigRanking()" class="text-3xl font-bold text-gray-400 hover:text-red-500 transition">✕ 닫기</button>
+            </div>
+
+            <div class="flex-1 overflow-y-auto pr-4 custom-scrollbar">
+                <table class="w-full text-left border-collapse">
+                    <thead class="sticky top-0 bg-white z-10 shadow-sm">
+                        <tr class="text-xl text-gray-500 border-b-2 border-gray-200">
+                            <th class="p-4 w-[15%]">순위</th>
+                            <th class="p-4 w-[45%]">이름</th>
+                            <th class="p-4 w-[40%] text-right">총 자산</th>
+                        </tr>
+                    </thead>
+                    <tbody id="big-ranking-list" class="text-2xl font-bold text-gray-700">
+                        </tbody>
+                </table>
+            </div>
+            
+            <div class="text-center text-gray-400 mt-4 text-lg">
+                ※ 실시간 데이터입니다. (F11을 눌러 전체화면으로 보여주세요)
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot, runTransaction, serverTimestamp, increment, collection, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, getDocs, updateDoc, onSnapshot, runTransaction, serverTimestamp, increment, collection, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const manualConfig = {
             apiKey: "AIzaSyDrhxV67EB2a9ZsKOs6XCMDPCaPJorgEyw",
@@ -277,7 +304,6 @@
         const FEE_RATES = { buy: 0.0015, sell: 0.003 };
         const ADMIN_EMAIL = "poiujuy0014@pess.cnehs.kr";
 
-        // 🟢 V28 수정: 사운드 로직 단순화 (One-shot, No Echo)
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playTone(freq, type, duration) {
             if(audioCtx.state === 'suspended') audioCtx.resume();
@@ -294,13 +320,12 @@
         }
 
         window.playSound = (type) => {
-            // 중복 실행 방지 및 단발성 사운드
-            if (type === 'buy') playTone(880, 'sine', 0.15); // 띵 (높음)
-            else if (type === 'sell') playTone(440, 'triangle', 0.15); // 퉁 (낮음)
-            else if (type === 'news_good') playTone(1200, 'sine', 0.3); // 띠링!
-            else if (type === 'news_bad') playTone(150, 'sawtooth', 0.4); // 뿌웅...
-            else if (type === 'news_normal') playTone(600, 'square', 0.1); // 띡
-            else if (type === 'news_forecast') playTone(800, 'sine', 0.5); // 웅~
+            if (type === 'buy') playTone(880, 'sine', 0.15); 
+            else if (type === 'sell') playTone(440, 'triangle', 0.15); 
+            else if (type === 'news_good') playTone(1200, 'sine', 0.3); 
+            else if (type === 'news_bad') playTone(150, 'sawtooth', 0.4); 
+            else if (type === 'news_normal') playTone(600, 'square', 0.1); 
+            else if (type === 'news_forecast') playTone(800, 'sine', 0.5); 
             else if (type === 'error') playTone(200, 'sawtooth', 0.2); 
         };
 
@@ -352,7 +377,6 @@
             { code: "122870", name: "와이지엔터테인먼트", sector: "Enter", price: 63600 }
         ];
 
-        // 🟢 V28 수정: 뉴스 템플릿 대폭 확장 (다양하고 구체적인 뉴스)
         const NEWS_TEMPLATES = {
             'Market': [
                 { text: "미국 연준, 기준금리 동결 발표... 시장 전반 안도 랠리", type: "good", impact: 0.03 },
@@ -587,7 +611,7 @@
                 document.getElementById('game-screen').classList.remove('hidden');
                 setupUI();
                 startRealtimeSync();
-                subscribeToRankings(); 
+                // 🟡 랭킹 구독 함수 호출 제거 (서버비 절약)
                 showToast(`환영합니다, ${name}님!`, 'success');
                 playSound('buy'); 
 
@@ -632,43 +656,7 @@
             });
         }
         
-        function subscribeToRankings() {
-            const q = query(collection(db, `artifacts/${appId}/users`));
-            onSnapshot(q, (snapshot) => {
-                allUsersCache = [];
-                snapshot.forEach(doc => { allUsersCache.push(doc.data()); });
-                renderRankings();
-            });
-        }
-
-        function renderRankings() {
-            const listEl = document.getElementById('ranking-list');
-            if (Object.keys(marketData).length === 0 || allUsersCache.length === 0) return;
-            const rankedUsers = allUsersCache.map(user => {
-                let stockVal = 0;
-                if (user.holdings) {
-                    Object.keys(user.holdings).forEach(code => {
-                        const price = marketData[code]?.price || 0;
-                        stockVal += user.holdings[code].quantity * price;
-                    });
-                }
-                return { name: user.name, total: (user.cash || 0) + stockVal, role: user.role };
-            });
-            rankedUsers.sort((a, b) => b.total - a.total);
-            listEl.innerHTML = '';
-            rankedUsers.forEach((u, index) => { 
-                const rank = index + 1;
-                let rankClass = "bg-gray-100 text-gray-600";
-                if(rank === 1) rankClass = "gold-rank font-bold";
-                else if(rank === 2) rankClass = "silver-rank font-bold";
-                else if(rank === 3) rankClass = "bronze-rank font-bold";
-                const isMe = (u.name === currentUser.name) ? "border-2 border-indigo-500" : "";
-                const div = document.createElement('div');
-                div.className = `flex justify-between items-center p-2 rounded-lg text-sm ${isMe} ${index < 3 ? 'bg-opacity-90' : 'bg-gray-50'}`;
-                div.innerHTML = `<div class="flex items-center space-x-2"><span class="w-6 h-6 flex items-center justify-center rounded-full text-xs ${rankClass}">${rank}</span><span class="font-medium text-gray-800">${u.name}</span></div><span class="font-bold text-gray-600">${Math.round(u.total).toLocaleString()}</span>`;
-                listEl.appendChild(div);
-            });
-        }
+        // 🟡 기존 subscribeToRankings, renderRankings 함수 완전히 삭제됨 (데이터 절약)
 
         async function checkAndResetUserData(globalVersion) {
             const userRef = doc(db, `artifacts/${appId}/users`, currentUser.uid);
@@ -1045,7 +1033,7 @@
                 div.innerHTML = `<div class="col-span-4 font-medium text-gray-800">${s.name}<span class="block text-xs text-gray-400">${code}</span></div><div class="col-span-3 text-right font-bold ${colorClass}">${s.price.toLocaleString()}</div><div class="col-span-3 text-right text-xs ${colorClass}">${sign} ${s.rate.toFixed(2)}%</div><div class="col-span-2 text-center"><button onclick="openTradeModal('${code}')" class="bg-gray-100 hover:bg-indigo-100 text-indigo-600 px-3 py-1 rounded text-xs font-bold transition">분석/주문</button></div>`;
                 listEl.appendChild(div);
             });
-            renderRankings();
+            // 🟡 랭킹 렌더링 호출 제거됨
         }
 
         function updatePortfolioUI() {
@@ -1112,6 +1100,74 @@
                 });
             }
         }
+
+        // 🟢 V29 추가: 대형 랭킹판 열기 (데이터 가져오기)
+        window.openBigRanking = async () => {
+            const modal = document.getElementById('big-ranking-modal');
+            const listEl = document.getElementById('big-ranking-list');
+            
+            // 모달 먼저 띄우고 로딩 표시
+            modal.classList.remove('hidden');
+            listEl.innerHTML = '<tr><td colspan="3" class="p-10 text-center text-gray-400 animate-pulse">데이터를 불러오는 중입니다...</td></tr>';
+
+            try {
+                // Firebase에서 모든 유저 가져오기 (읽기 비용 발생 - 관리자 실행 시에만)
+                const q = query(collection(db, `artifacts/${appId}/users`));
+                const snapshot = await getDocs(q);
+                
+                const allUsers = [];
+                snapshot.forEach(doc => { allUsers.push(doc.data()); });
+
+                // 자산 계산
+                const rankedUsers = allUsers.map(user => {
+                    let stockVal = 0;
+                    if (user.holdings) {
+                        Object.keys(user.holdings).forEach(code => {
+                            const price = marketData[code]?.price || 0;
+                            stockVal += user.holdings[code].quantity * price;
+                        });
+                    }
+                    return { name: user.name, total: (user.cash || 0) + stockVal };
+                });
+
+                // 내림차순 정렬
+                rankedUsers.sort((a, b) => b.total - a.total);
+
+                // HTML 만들기 (크고 아름답게)
+                let html = '';
+                rankedUsers.slice(0, 50).forEach((u, index) => { // TOP 50만 표시
+                    const rank = index + 1;
+                    
+                    // 1,2,3등 색깔 다르게
+                    let rankStyle = "text-gray-600";
+                    let rowBg = "hover:bg-gray-50";
+                    let icon = "";
+                    
+                    if(rank === 1) { rankStyle = "text-yellow-500 text-3xl"; rowBg = "bg-yellow-50 hover:bg-yellow-100"; icon = "🥇"; }
+                    else if(rank === 2) { rankStyle = "text-gray-500 text-3xl"; rowBg = "bg-gray-50 hover:bg-gray-100"; icon = "🥈"; }
+                    else if(rank === 3) { rankStyle = "text-orange-600 text-3xl"; rowBg = "bg-orange-50 hover:bg-orange-100"; icon = "🥉"; }
+                    
+                    html += `
+                        <tr class="border-b border-gray-100 transition ${rowBg}">
+                            <td class="p-4 ${rankStyle} font-black">${icon} ${rank}위</td>
+                            <td class="p-4 font-bold text-gray-800">${u.name}</td>
+                            <td class="p-4 text-right font-mono text-indigo-600">${Math.round(u.total).toLocaleString()} 원</td>
+                        </tr>
+                    `;
+                });
+                
+                listEl.innerHTML = html;
+
+            } catch (e) {
+                console.error(e);
+                listEl.innerHTML = `<tr><td colspan="3" class="p-10 text-center text-red-500">불러오기 실패: ${e.message}</td></tr>`;
+            }
+        };
+
+        // 대형 랭킹판 닫기
+        window.closeBigRanking = () => {
+            document.getElementById('big-ranking-modal').classList.add('hidden');
+        };
 
         document.getElementById('login-btn').addEventListener('click', login);
     </script>
