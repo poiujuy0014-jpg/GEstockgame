@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>대건고 주식 모의투자 (V24 - Realtime Impact)</title>
+    <title>대건고 주식 모의투자 (V26 - Fixed Scenario)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -23,7 +23,6 @@
         .toast-enter { animation: slideIn 0.3s ease-out forwards; }
         .toast-exit { animation: fadeOut 0.3s ease-in forwards; }
         
-        /* 뉴스 강조 효과 */
         @keyframes newsFlash { 
             0% { background-color: #fff; } 
             50% { background-color: #fffbeb; } 
@@ -40,7 +39,7 @@
         <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border border-gray-100">
             <div class="text-center mb-8">
                 <h1 class="text-3xl font-bold text-indigo-700 mb-2">📈 대건고 주식 모의투자</h1>
-                <p class="text-gray-500 text-sm">실시간 뉴스 반영 시스템 (V24)</p>
+                <p class="text-gray-500 text-sm">실시간 뉴스 & 시나리오 시스템 (V26)</p>
             </div>
             
             <form id="login-form" class="space-y-5" onsubmit="return false;">
@@ -157,8 +156,8 @@
             </section>
         </main>
 
-        <div id="admin-panel" class="hidden fixed bottom-4 right-4 bg-gray-900 text-white p-4 rounded-xl shadow-2xl z-50 opacity-90 hover:opacity-100 transition border-2 border-yellow-500 w-64 max-h-[80vh] flex flex-col">
-            <h3 class="font-bold text-yellow-400 mb-3 text-center border-b border-gray-700 pb-2">👑 관리자 모드</h3>
+        <div id="admin-panel" class="hidden fixed bottom-4 right-4 bg-gray-900 text-white p-4 rounded-xl shadow-2xl z-50 opacity-90 hover:opacity-100 transition border-2 border-yellow-500 w-80 max-h-[80vh] flex flex-col">
+            <h3 class="font-bold text-yellow-400 mb-3 text-center border-b border-gray-700 pb-2">👑 관리자(선생님) 모드</h3>
             
             <div class="flex-grow overflow-y-auto space-y-2 pr-1 scrollbar-hide text-xs">
                 <div class="grid grid-cols-2 gap-2 mb-4">
@@ -166,13 +165,20 @@
                     <button onclick="adminFunc('stop')" class="bg-red-600 hover:bg-red-700 py-2 rounded font-bold">⛔ 마감</button>
                 </div>
 
-                <div class="text-center text-gray-400 text-[10px] mb-1">- 시나리오 (자동 뉴스 외 별도 실행) -</div>
+                <div class="text-center text-gray-400 text-[10px] mb-1">- 수업 시나리오 (버튼 클릭) -</div>
                 
-                <div class="space-y-1">
-                    <button onclick="runScenario(1)" class="w-full text-left px-2 py-1 bg-gray-800 hover:bg-indigo-900 rounded">9:30 산타랠리</button>
-                    <button onclick="runScenario(4)" class="w-full text-left px-2 py-1 bg-gray-800 hover:bg-indigo-900 rounded">11:00 실적 충격</button>
-                    <button onclick="runScenario(7)" class="w-full text-left px-2 py-1 bg-gray-800 hover:bg-indigo-900 rounded">14:00 성장주 반등</button>
-                    <button onclick="runScenario(11)" class="w-full text-left px-2 py-1 bg-gray-800 hover:bg-indigo-900 rounded">16:00 폭등 마감</button>
+                <div class="grid grid-cols-2 gap-1">
+                    <button onclick="runScenario(1)" class="px-2 py-1 bg-gray-800 hover:bg-indigo-900 rounded text-left">09:30 산타랠리</button>
+                    <button onclick="runScenario(2)" class="px-2 py-1 bg-gray-800 hover:bg-indigo-900 rounded text-left">10:00 차익실현</button>
+                    <button onclick="runScenario(3)" class="px-2 py-1 bg-gray-800 hover:bg-indigo-900 rounded text-left">10:30 환율 수혜</button>
+                    <button onclick="runScenario(4)" class="px-2 py-1 bg-gray-800 hover:bg-indigo-900 rounded text-left">11:00 어닝 쇼크</button>
+                    <button onclick="runScenario(5)" class="px-2 py-1 bg-gray-800 hover:bg-indigo-900 rounded text-left">11:30 환율 피해</button>
+                    <button onclick="runScenario(6)" class="px-2 py-1 bg-gray-800 hover:bg-indigo-900 rounded text-left">12:00 점심 관망</button>
+                    <button onclick="runScenario(7)" class="px-2 py-1 bg-gray-800 hover:bg-indigo-900 rounded text-left">14:00 성장주 반등</button>
+                    <button onclick="runScenario(8)" class="px-2 py-1 bg-gray-800 hover:bg-indigo-900 rounded text-left">14:30 가이던스 하향</button>
+                    <button onclick="runScenario(9)" class="px-2 py-1 bg-gray-800 hover:bg-indigo-900 rounded text-left">15:00 라스트 아워</button>
+                    <button onclick="runScenario(10)" class="px-2 py-1 bg-gray-800 hover:bg-indigo-900 rounded text-left">15:30 배당주 매수</button>
+                    <button onclick="runScenario(11)" class="px-2 py-1 bg-gray-800 hover:bg-indigo-900 rounded text-left">16:00 윈도우 드레싱</button>
                 </div>
 
                 <div class="h-4 border-b border-gray-700 mb-2"></div>
@@ -291,13 +297,11 @@
             if (type === 'buy') { beep(880, 'sine', 0.1, 0.1); setTimeout(() => beep(1760, 'sine', 0.3, 0.1), 100); } 
             else if (type === 'sell') { beep(1200, 'triangle', 0.1, 0.1); setTimeout(() => beep(2000, 'sine', 0.4, 0.1), 80); } 
             else if (type === 'news_good') { 
-                // 호재 알림 (밝고 경쾌)
                 beep(600, 'sine', 0.1, 0.1); 
                 setTimeout(() => beep(900, 'sine', 0.1, 0.1), 100); 
                 setTimeout(() => beep(1200, 'sine', 0.3, 0.1), 200); 
             }
             else if (type === 'news_bad') { 
-                // 악재 알림 (낮고 경고음)
                 beep(800, 'sawtooth', 0.1, 0.1); 
                 setTimeout(() => beep(600, 'sawtooth', 0.1, 0.1), 100); 
                 setTimeout(() => beep(400, 'sawtooth', 0.3, 0.1), 200); 
@@ -419,11 +423,19 @@
             ]
         };
 
+        // 🟢 V26: 선생님 요청 시나리오 11개 적용
         const SCENARIOS_DATA = {
-            1: { time: "오전 9:30", type: "forecast", text: "[전망] 산타랠리 모멘텀: 기관 대규모 매수세 유입 조짐", targets: ["005930", "000660", "005380", "035420"], delta: 0.18 }, 
-            4: { time: "오전 11:00", type: "forecast", text: "[전망] 어닝쇼크 경보: 2차전지 섹터 매물 출회 주의", targets: ["006400", "373220", "003670"], delta: -0.20 }, 
-            7: { time: "오후 2:00", type: "forecast", text: "[전망] 낙폭 과대: 플랫폼 및 엔터주 반등 시도 전망", targets: ["035720", "035420", "352820", "035900"], delta: 0.20 }, 
-            11: { time: "오후 4:00", type: "forecast", text: "[전망] 마감 동시호가: 대형주 위주 윈도우 드레싱 유입 예상", targets: ["005930", "005380", "105560"], delta: 0.10 } 
+            1: { time: "오전 9:30", type: "forecast", text: "[전망] 산타랠리 모멘텀: 기관 대규모 매수세 유입 조짐... 대형주 강세 예상", targets: ["005930", "000660", "005380", "035420", "005490"], delta: 0.18 },
+            2: { time: "오전 10:00", type: "forecast", text: "[전망] 기술적 분석: 단기 급등 부담감에 차익 매물 출회 가능성 대두", targets: ["207940", "068270", "000270", "011070", "035720"], delta: -0.15 },
+            3: { time: "오전 10:30", type: "forecast", text: "[전망] 환율 수혜: 원/달러 환율 상승으로 수출주(자동차, 조선) 실적 개선 기대", targets: ["005380", "005930", "329180", "012450", "010140"], delta: 0.15 },
+            4: { time: "오전 11:00", type: "forecast", text: "[전망] 어닝시즌 경계: 2차전지 및 화학 섹터 실적 충격(어닝 쇼크) 주의보", targets: ["006400", "051910", "003670", "096770", "009830"], delta: -0.20 },
+            5: { time: "오전 11:30", type: "forecast", text: "[전망] 환율 피해: 원자재 수입 비용 증가로 내수 및 식품 기업 수익성 악화 우려", targets: ["097950", "004170", "023530", "000100"], delta: -0.12 },
+            6: { time: "오후 12:00", type: "forecast", text: "[전망] 기본적 분석: 점심시간 거래량 감소 속 주가 횡보 및 관망세 예상", targets: ["105560", "055550", "000810", "004600", "004020"], delta: 0.005 },
+            7: { time: "오후 2:00", type: "forecast", text: "[전망] 세금 회피 물량 소화: 낙폭 과대 성장주(플랫폼, 엔터) 반등 시도 전망", targets: ["035720", "035420", "035900", "352820", "323410"], delta: 0.20 },
+            8: { time: "오후 2:30", type: "forecast", text: "[전망] 어닝 시즌의 함정: 실적 가이던스 하향 조정으로 관련주 변동성 확대 주의", targets: ["373220", "079550", "042660", "066570", "041510"], delta: -0.22 },
+            9: { time: "오후 3:00", type: "forecast", text: "[전망] 라스트 아워: 장 막판 산타랠리 확신 매수세 유입... 지수 상승폭 확대 예상", targets: ["005930", "000660", "005380", "005490", "004600"], delta: 0.18 },
+            10: { time: "오후 3:30", type: "forecast", text: "[전망] 찬바람엔 배당주: 연말 배당 기대감으로 금융 및 전통주 종가 관리 매수세 유입", targets: ["105560", "000810", "055550", "004020", "000270"], delta: 0.05 },
+            11: { time: "오후 4:00", type: "forecast", text: "[전망] 윈도우 드레싱: 기관 수익률 제고를 위한 막판 대형주 집중 매수 예상", targets: ["005930", "005380", "105560", "207940", "005490", "035420"], delta: 0.10 }
         };
 
         const COMPANY_DESCRIPTIONS = {
@@ -431,7 +443,6 @@
             "000660": "글로벌 메모리 반도체 2위, HBM 시장 선도 기업",
             "035420": "국내 1위 검색 포털 및 AI, 커머스 플랫폼 기업",
             "035720": "국민 메신저 카카오톡 기반의 모바일 라이프 플랫폼"
-            // (나머지는 공간 절약을 위해 생략, 기존 데이터 유지)
         };
 
         let currentUser = null;
@@ -468,11 +479,10 @@
             }, 3000);
         };
 
-        // 🟢 V24: 자동 뉴스 생성 루프 (현실감 강화)
+        // 자동 뉴스 생성 루프
         function startAutoNewsLoop() {
             if (!currentUser || currentUser.role !== 'admin') return;
 
-            // 15초 ~ 40초 사이 랜덤 딜레이로 뉴스 발생
             const minDelay = 15000;
             const maxDelay = 40000;
             const delay = Math.floor(Math.random() * (maxDelay - minDelay + 1)) + minDelay;
@@ -630,19 +640,17 @@
             }
         };
 
-        // 🟢 V24: 업그레이드된 랜덤 뉴스 & 다중 주가 변동 로직
+        // 랜덤 뉴스 & 다중 주가 변동 로직
         async function triggerRandomNews() {
             if (currentUser.role !== 'admin') return;
 
-            // 1. 현재 시간 (현실감 부여)
             const now = new Date();
             const timeString = now.toLocaleTimeString('ko-KR', { hour12: false, hour: "2-digit", minute: "2-digit", second: "2-digit" });
 
             const codes = Object.keys(marketData);
             if(codes.length === 0) return;
             
-            // 2. 이벤트 유형 결정 (시장 전체 vs 섹터/개별)
-            const isMarketEvent = Math.random() < 0.2; // 20% 확률로 시장 전체 이슈
+            const isMarketEvent = Math.random() < 0.2; 
 
             let selectedCodes = [];
             let newsText = "";
@@ -652,7 +660,6 @@
             const updates = {}; 
 
             if (isMarketEvent) {
-                // 시장 전체 뉴스 (모든 종목 영향)
                 const templateList = NEWS_TEMPLATES['Market'];
                 const template = templateList[Math.floor(Math.random() * templateList.length)];
                 newsText = template.text;
@@ -660,12 +667,10 @@
                 impactRate = template.impact;
                 selectedCodes = codes; 
             } else {
-                // 섹터 또는 개별 종목 뉴스
                 const mainCode = codes[Math.floor(Math.random() * codes.length)];
                 const mainStock = marketData[mainCode];
                 const sector = mainStock.sector;
 
-                // 해당 섹터 뉴스 템플릿 가져오기
                 const templateList = NEWS_TEMPLATES[sector] || NEWS_TEMPLATES['Default'];
                 const template = templateList[Math.floor(Math.random() * templateList.length)];
                 
@@ -673,25 +678,17 @@
                 newsType = template.type;
                 impactRate = template.impact;
 
-                // 타겟: 같은 섹터의 모든 종목 선택 (연쇄 효과)
                 selectedCodes = codes.filter(c => marketData[c].sector === sector);
             }
 
-            // 3. 주가 변동 적용 Loop (나비효과 구현)
             selectedCodes.forEach(code => {
                 const stock = marketData[code];
-                
                 let localImpact = impactRate;
-
-                // 변동폭 로직:
                 if (!isMarketEvent && newsText.includes(stock.name)) {
-                    // 뉴스 주인공: 강한 변동 (90% ~ 120%)
                     localImpact = impactRate * (0.9 + Math.random() * 0.3); 
                 } else if (!isMarketEvent) {
-                    // 같은 섹터 동조 현상 (커플링): 약한 변동 (주인공의 30% 수준)
                     localImpact = impactRate * 0.3 * (0.5 + Math.random() * 1.0); 
                 } else {
-                    // 시장 전체 이슈: 중간 변동
                     localImpact = impactRate * (0.8 + Math.random() * 0.4);
                 }
 
@@ -708,7 +705,6 @@
                 updates[`stocks.${code}.history`] = history;
             });
 
-            // 4. DB 업데이트 (뉴스 + 주가 일괄 적용)
             const newsRef = doc(db, `artifacts/${appId}/public/news`);
             const newsSnap = await getDoc(newsRef);
             let currentNews = newsSnap.exists() ? newsSnap.data().items : [];
@@ -717,11 +713,8 @@
             const newNewsList = [newEvent, ...currentNews].slice(0, 20);
             
             await updateDoc(newsRef, { items: newNewsList });
-            
             const marketRef = doc(db, `artifacts/${appId}/public/market_state`);
             await updateDoc(marketRef, updates);
-
-            console.log(`📰 [${timeString}] News Triggered: ${newsText}`);
         }
 
         window.runScenario = async (scenarioId) => {
@@ -747,7 +740,10 @@
                 Object.keys(marketData).forEach(code => {
                     const stock = marketData[code];
                     let changePct = (Math.random() * 0.02) - 0.01; 
-                    if (scenario.targets.includes(code)) {
+                    if (scenario.targets.includes('all')) {
+                        changePct = scenario.delta * (0.9 + Math.random() * 0.2);
+                    }
+                    else if (scenario.targets.includes(code)) {
                         changePct = scenario.delta * (0.9 + Math.random() * 0.2); 
                     }
                     let newPrice = Math.round(stock.price * (1 + changePct));
@@ -1030,7 +1026,6 @@
 
                 ticker.innerText = `${typeIcon} ${latest.text} (${latest.time})`;
                 
-                // 새로운 뉴스가 감지되었을 때만 소리 재생 및 효과 적용
                 if (window.lastNewsTime !== latest.time) {
                     if (latest.type === 'good') playSound('news_good');
                     else if (latest.type === 'bad') playSound('news_bad');
@@ -1038,8 +1033,6 @@
                     else playSound('news_normal');
                     
                     window.lastNewsTime = latest.time;
-                    
-                    // 시각적 강조 효과 (깜빡임)
                     ticker.parentElement.parentElement.classList.add('news-flash');
                     setTimeout(() => ticker.parentElement.parentElement.classList.remove('news-flash'), 1000);
                 }
