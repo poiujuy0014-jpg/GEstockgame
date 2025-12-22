@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>대건고 주식 모의투자 (V31 - Final Update)</title>
+    <title>대건고 주식 모의투자 (V32 - Final Master)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -45,7 +45,7 @@
         <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border border-gray-100">
             <div class="text-center mb-8">
                 <h1 class="text-3xl font-bold text-indigo-700 mb-2">📈 대건고 주식 모의투자</h1>
-                <p class="text-gray-500 text-sm">V31: 뉴스 심층 보도 시스템</p>
+                <p class="text-gray-500 text-sm">V32: 최종 완성본 (뉴스 데이터 확장)</p>
             </div>
             
             <form id="login-form" class="space-y-5" onsubmit="return false;">
@@ -153,7 +153,7 @@
         </main>
 
         <div id="admin-panel" class="hidden fixed bottom-4 right-4 bg-gray-900 text-white p-4 rounded-xl shadow-2xl z-50 opacity-90 hover:opacity-100 transition border-2 border-yellow-500 w-80 max-h-[80vh] flex flex-col">
-            <h3 class="font-bold text-yellow-400 mb-3 text-center border-b border-gray-700 pb-2">👑 관리자 모드 (V31)</h3>
+            <h3 class="font-bold text-yellow-400 mb-3 text-center border-b border-gray-700 pb-2">👑 관리자 모드 (V32)</h3>
             
             <div class="flex-grow overflow-y-auto space-y-2 pr-1 scrollbar-hide text-xs">
                 <div class="grid grid-cols-2 gap-2 mb-4">
@@ -400,7 +400,6 @@
             { code: "122870", name: "와이지엔터테인먼트", sector: "Enter", price: 63600 }
         ];
 
-        // 🟢 V31: 기업 설명 전체 복구
         const COMPANY_DESCRIPTIONS = {
             "005930": "글로벌 메모리 반도체 1위 및 스마트폰, 가전 세계적 기업",
             "000660": "글로벌 메모리 반도체 2위, HBM 시장 선도 기업",
@@ -441,24 +440,125 @@
             "122870": "블랙핑크, 베이비몬스터 등 글로벌 IP를 보유한 엔터 기업"
         };
 
+        // 🟢 V32: 랜덤 뉴스 데이터 대폭 확장 (섹터별/종목별 다수 추가)
         const NEWS_TEMPLATES = {
             'Market': [
-                { text: "미국 연준, 기준금리 동결 발표... 시장 전반 안도 랠리", type: "good", impact: 0.03 },
-                { text: "글로벌 경기 침체 공포 확산, 투심 급격히 위축", type: "bad", impact: -0.03 },
+                { text: "미국 연준(Fed), 기준금리 동결 시사... 안도 랠리 기대", type: "good", impact: 0.03 },
+                { text: "글로벌 경기 침체 우려 확산, 투자 심리 위축", type: "bad", impact: -0.03 },
                 { text: "정부, 증시 부양 위한 밸류업 프로그램 2탄 발표", type: "good", impact: 0.02 },
-                { text: "환율 급등(원화 약세)으로 외국인 대량 매도세 출현", type: "bad", impact: -0.02 },
+                { text: "원/달러 환율 급등... 외국인 자금 이탈 우려", type: "bad", impact: -0.02 },
                 { text: "국민연금, 국내 주식 비중 확대 계획 발표", type: "good", impact: 0.02 },
-                { text: "중동 지정학적 리스크 고조... 국제 유가 급등", type: "bad", impact: -0.02 }
+                { text: "중동 지정학적 리스크 고조... 국제 유가 불안", type: "bad", impact: -0.02 },
+                { text: "외국인 투자자, 코스피 5일 연속 순매수 행진", type: "good", impact: 0.02 },
+                { text: "미국 CPI(소비자물가지수) 예상치 하회... 금리 인하 기대감", type: "good", impact: 0.03 },
+                { text: "중국 부동산 위기 재점화... 아시아 증시 전반 약세", type: "bad", impact: -0.03 }
+            ],
+            'IT': [
+                { text: "{name}, 차세대 HBM4 반도체 수율 90% 달성 쾌거", type: "good", impact: 0.07 },
+                { text: "{name}, 반도체 D램 현물 가격 하락 전환... 업황 우려", type: "bad", impact: -0.05 },
+                { text: "{name}, 경쟁사와 특허 소송 승소... 배상금 수령 기대", type: "good", impact: 0.04 },
+                { text: "{name}, 미국 빅테크 기업과 대규모 AI 칩 공급 계약 체결", type: "good", impact: 0.06 },
+                { text: "{name}, 최신 스마트폰 사전 예약 역대 최고치 기록", type: "good", impact: 0.05 },
+                { text: "{name}, 파운드리 공정 수율 부진 루머 확산에 급락", type: "bad", impact: -0.04 },
+                { text: "{name}, 외국인 창구 대량 매수 유입... 주가 강세", type: "good", impact: 0.03 },
+                { text: "{name}, 신규 공장 증설 계획 연기... 투자 심리 냉각", type: "bad", impact: -0.03 }
+            ],
+            'Platform': [
+                { text: "{name}, 생성형 AI 서비스 유료 가입자 100만 돌파", type: "good", impact: 0.06 },
+                { text: "{name}, 공정위 플랫폼 독과점 강력 제재안 발표", type: "bad", impact: -0.05 },
+                { text: "{name}, 웹툰 자회사 나스닥 상장 구체화 소식", type: "good", impact: 0.05 },
+                { text: "{name}, 광고 경기 둔화로 분기 매출 감소 우려", type: "bad", impact: -0.03 },
+                { text: "{name}, 핀테크 사업 부문 흑자 전환 성공", type: "good", impact: 0.04 },
+                { text: "{name}, 신규 게임 퍼블리싱 대박... 매출 급증 예상", type: "good", impact: 0.05 },
+                { text: "{name}, 서버 화재로 인한 서비스 장애 발생 악재", type: "bad", impact: -0.04 }
+            ],
+            'Auto': [
+                { text: "{name}, 북미 전기차 전용 공장 조기 가동 소식", type: "good", impact: 0.06 },
+                { text: "{name}, 차량용 반도체 수급난 재점화로 생산 차질", type: "bad", impact: -0.05 },
+                { text: "{name}, 노조 파업 결의... 생산 차질 우려 확대", type: "bad", impact: -0.04 },
+                { text: "{name}, 자율주행 레벨3 상용화 허가 획득", type: "good", impact: 0.07 },
+                { text: "{name}, 하이브리드 차량 판매 호조로 실적 방어", type: "good", impact: 0.03 },
+                { text: "{name}, 미국 관세 부과 가능성 제기에 약세", type: "bad", impact: -0.03 },
+                { text: "{name}, 유럽 시장 점유율 역대 최고치 경신", type: "good", impact: 0.04 },
+                { text: "{name}, 대규모 리콜 사태 발생... 충당금 부담", type: "bad", impact: -0.04 }
+            ],
+            'Battery': [
+                { text: "{name}, 차세대 전고체 배터리 시제품 공개", type: "good", impact: 0.08 },
+                { text: "{name}, 전기차 캐즘(수요 둔화) 장기화 우려 지속", type: "bad", impact: -0.06 },
+                { text: "{name}, 미국 IRA 보조금 축소 가능성에 긴장", type: "bad", impact: -0.04 },
+                { text: "{name}, 유럽 완성차 업체와 대규모 장기 공급 계약", type: "good", impact: 0.07 },
+                { text: "{name}, 리튬 가격 반등으로 재고 평가익 기대", type: "good", impact: 0.04 },
+                { text: "{name}, 중국 배터리 업체 저가 공세에 점유율 하락", type: "bad", impact: -0.03 },
+                { text: "{name}, 4680 원통형 배터리 양산 준비 완료", type: "good", impact: 0.05 }
+            ],
+            'Defense': [
+                { text: "{name}, 동유럽 국가와 2조원대 무기 수출 계약 체결", type: "good", impact: 0.09 },
+                { text: "{name}, 평화 협정 무드 조성에 방산주 동반 약세", type: "bad", impact: -0.05 },
+                { text: "{name}, 차세대 전투기 개발 사업 우선협상대상자 선정", type: "good", impact: 0.06 },
+                { text: "{name}, 우주 발사체 엔진 시험 성공 소식", type: "good", impact: 0.05 },
+                { text: "{name}, 정부 국방 예산 대폭 증액 수혜 기대", type: "good", impact: 0.04 }
+            ],
+            'Ship': [
+                { text: "{name}, 카타르발 LNG선 2차 대량 수주 잭팟", type: "good", impact: 0.07 },
+                { text: "{name}, 조선소 인력난 심화로 납기 지연 우려", type: "bad", impact: -0.03 },
+                { text: "{name}, 친환경 메탄올 추진선 기술 세계 최초 인증", type: "good", impact: 0.05 },
+                { text: "{name}, 후판 가격 협상 난항으로 원가 부담 증가", type: "bad", impact: -0.02 },
+                { text: "{name}, 3년치 일감 확보... 도크가 꽉 찼다", type: "good", impact: 0.04 }
+            ],
+            'Steel': [
+                { text: "{name}, 중국 경기 부양책에 철강 수요 회복 기대", type: "good", impact: 0.04 },
+                { text: "{name}, 건설 경기 침체로 철근 판매량 급감", type: "bad", impact: -0.03 },
+                { text: "{name}, 저탄소 수소 환원 제철 기술 개발 국책 과제 선정", type: "good", impact: 0.03 },
+                { text: "{name}, 원자재 철광석 가격 급등으로 마진 압박", type: "bad", impact: -0.02 }
+            ],
+            'Chem': [
+                { text: "{name}, 국제 유가 상승으로 정제 마진 강세", type: "good", impact: 0.04 },
+                { text: "{name}, 중국발 공급 과잉으로 석유화학 업황 부진", type: "bad", impact: -0.03 },
+                { text: "{name}, 고부가 스페셜티 소재 비중 확대로 체질 개선", type: "good", impact: 0.05 },
+                { text: "{name}, 태양광 소재 수요 급증... 실적 호조", type: "good", impact: 0.04 }
+            ],
+            'Finance': [
+                { text: "{name}, 주주 환원 강화... 자사주 소각 및 배당 확대", type: "good", impact: 0.06 },
+                { text: "{name}, 부동산 PF 부실 우려로 대손 충당금 적립 증가", type: "bad", impact: -0.04 },
+                { text: "{name}, 3분기 당기순이익 사상 최대 달성", type: "good", impact: 0.04 },
+                { text: "{name}, 홍콩 ELS 배상안 확정으로 일회성 비용 발생", type: "bad", impact: -0.02 },
+                { text: "{name}, 금리 인하 시기 지연에 따른 이자 이익 증가", type: "good", impact: 0.03 }
+            ],
+            'Bio': [
+                { text: "{name}, 개발 중인 항암제 미 FDA 임상 3상 통과", type: "good", impact: 0.12 },
+                { text: "{name}, 임상 데이터 조작 의혹 제기로 주가 급락", type: "bad", impact: -0.10 },
+                { text: "{name}, 글로벌 제약사에 1조원 규모 기술 수출(L/O)", type: "good", impact: 0.10 },
+                { text: "{name}, 바이오시밀러 미국 시장 점유율 1위 달성", type: "good", impact: 0.07 },
+                { text: "{name}, 신약 허가 심사 지연 소식에 실망 매물", type: "bad", impact: -0.05 },
+                { text: "{name}, 대규모 생산 공장 증설 완료... CMO 수주 확대", type: "good", impact: 0.05 }
+            ],
+            'Enter': [
+                { text: "{name}, 소속 신인 그룹 빌보드 핫100 진입 쾌거", type: "good", impact: 0.08 },
+                { text: "{name}, 간판 아티스트 재계약 불발 설에 주가 휘청", type: "bad", impact: -0.08 },
+                { text: "{name}, 월드 투어 전석 매진... MD 매출 역대급", type: "good", impact: 0.06 },
+                { text: "{name}, 멤버 사생활 리스크로 인한 활동 중단 악재", type: "bad", impact: -0.06 },
+                { text: "{name}, 신규 앨범 초동 판매량 밀리언셀러 달성", type: "good", impact: 0.05 }
+            ],
+            'Retail': [
+                { text: "{name}, 중국인 단체 관광객(유커) 귀환에 면세점 호황", type: "good", impact: 0.05 },
+                { text: "{name}, 내수 소비 위축으로 백화점 매출 역성장", type: "bad", impact: -0.03 },
+                { text: "{name}, 온라인 채널 강화로 매출 구조 다변화 성공", type: "good", impact: 0.03 }
+            ],
+            'Food': [
+                { text: "{name}, 냉동 김밥 미국 마트 완판 행진... K-푸드 열풍", type: "good", impact: 0.06 },
+                { text: "{name}, 원당 및 밀가루 가격 인상으로 원가 부담 가중", type: "bad", impact: -0.02 },
+                { text: "{name}, 가격 인상 단행... 수익성 개선 기대", type: "good", impact: 0.03 }
             ],
             'Default': [
                 { text: "{name}, 어닝 서프라이즈(깜짝 실적) 발표", type: "good", impact: 0.05 },
                 { text: "{name}, 실적 쇼크... 증권가 목표 주가 줄하향", type: "bad", impact: -0.04 },
                 { text: "{name}, 외국인 10일 연속 순매수 행진", type: "good", impact: 0.03 },
-                { text: "{name}, 경영권 분쟁 조짐에 단기 급등", type: "good", impact: 0.05 }
+                { text: "{name}, 경영권 분쟁 조짐에 단기 급등", type: "good", impact: 0.05 },
+                { text: "{name}, 신규 사업 진출 선언에 기대감 솔솔", type: "good", impact: 0.04 },
+                { text: "{name}, 대규모 유상증자 결정에 주가 급락", type: "bad", impact: -0.08 }
             ]
         };
 
-        // 🟢 V31: 기사 전문 데이터 (시간 30분씩 앞당김 적용)
         const SCENARIO_DETAILS = {
             1: {
                 title: "[속보] “산타가 온다”...삼성전자, 현대차 등 대형주 주도로 코스피 ‘강세’",
@@ -506,7 +606,6 @@
             }
         };
 
-        // 🟢 V31: 시나리오 시간 조정 (오후 시간 30분씩 당김)
         const SCENARIOS_DATA = {
             1: { time: "오전 9:30", targets: ["005930", "000660", "005380", "035420", "005490"], delta: 0.18 },
             2: { time: "오전 10:00", targets: ["207940", "068270", "000270", "011070", "035720"], delta: -0.15 },
@@ -700,7 +799,7 @@
                 const mainCode = codes[Math.floor(Math.random() * codes.length)];
                 const mainStock = marketData[mainCode];
                 const sector = mainStock.sector;
-                const templateList = NEWS_TEMPLATES['Default'];
+                const templateList = NEWS_TEMPLATES[sector] || NEWS_TEMPLATES['Default']; // 🟢 섹터별 템플릿 우선 적용
                 const template = templateList[Math.floor(Math.random() * templateList.length)];
                 newsText = template.text.replace("{name}", mainStock.name);
                 newsType = template.type;
