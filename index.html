@@ -567,8 +567,8 @@
         function startAutoNewsLoop() {
             if (!currentUser || currentUser.role !== 'admin') return;
 
-            const minDelay = 15000;
-            const maxDelay = 40000;
+            const minDelay = 40000;
+            const maxDelay = 60000;
             const delay = Math.floor(Math.random() * (maxDelay - minDelay + 1)) + minDelay;
 
             setTimeout(async () => {
