@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>대건고 주식 모의투자 (V32 - Final Master)</title>
+    <title>대건고 주식 모의투자 (New Server)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -15,7 +15,6 @@
         .price-down { color: #2563eb; } 
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         
-        /* 커스텀 스크롤바 */
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 3px; }
@@ -32,8 +31,6 @@
             100% { background-color: #fff; } 
         }
         .news-flash { animation: newsFlash 1s ease-in-out; }
-        
-        /* 기사 본문용 폰트 */
         .article-font { font-family: 'Noto Serif KR', serif; }
     </style>
 </head>
@@ -45,7 +42,7 @@
         <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border border-gray-100">
             <div class="text-center mb-8">
                 <h1 class="text-3xl font-bold text-indigo-700 mb-2">📈 대건고 주식 모의투자</h1>
-                <p class="text-gray-500 text-sm">V32: 최종 완성본 (뉴스 데이터 확장)</p>
+                <p class="text-gray-500 text-sm">시스템 재가동 (서버 교체 완료)</p>
             </div>
             
             <form id="login-form" class="space-y-5" onsubmit="return false;">
@@ -153,7 +150,7 @@
         </main>
 
         <div id="admin-panel" class="hidden fixed bottom-4 right-4 bg-gray-900 text-white p-4 rounded-xl shadow-2xl z-50 opacity-90 hover:opacity-100 transition border-2 border-yellow-500 w-80 max-h-[80vh] flex flex-col">
-            <h3 class="font-bold text-yellow-400 mb-3 text-center border-b border-gray-700 pb-2">👑 관리자 모드 (V32)</h3>
+            <h3 class="font-bold text-yellow-400 mb-3 text-center border-b border-gray-700 pb-2">👑 관리자 모드 (새 서버)</h3>
             
             <div class="flex-grow overflow-y-auto space-y-2 pr-1 scrollbar-hide text-xs">
                 <div class="grid grid-cols-2 gap-2 mb-4">
@@ -300,14 +297,14 @@
         import { getAuth, signInAnonymously, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, getDocs, updateDoc, onSnapshot, runTransaction, serverTimestamp, increment, collection, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+        // 🟢 [수정됨] 선생님이 제공하신 새로운 키 적용 완료
         const manualConfig = {
-            apiKey: "AIzaSyDrhxV67EB2a9ZsKOs6XCMDPCaPJorgEyw",
-            authDomain: "ge-stock-project.firebaseapp.com",
-            projectId: "ge-stock-project",
-            storageBucket: "ge-stock-project.firebasestorage.app",
-            messagingSenderId: "269147597454",
-            appId: "1:269147597454:web:91a4e847bc6de3343f37df",
-            measurementId: "G-WV45GCRSHL"
+            apiKey: "AIzaSyDPx5imrlaK5mNCAnU8FgVRt9MaMuzV73I",
+            authDomain: "ge-meco.firebaseapp.com",
+            projectId: "ge-meco",
+            storageBucket: "ge-meco.firebasestorage.app",
+            messagingSenderId: "424481404092",
+            appId: "1:424481404092:web:89d707e4ad88f4274f8cb9"
         };
         const appId = 'stock-school-sim';
 
@@ -316,8 +313,8 @@
             app = initializeApp(manualConfig);
             db = getFirestore(app);
             auth = getAuth(app);
-            document.getElementById('db-status').textContent = "데이터베이스 연결 완료";
-            document.getElementById('db-status').className = "mt-2 font-bold text-green-500";
+            document.getElementById('db-status').textContent = "새 서버(ge-meco) 연결 성공!";
+            document.getElementById('db-status').className = "mt-2 font-bold text-blue-600";
         } catch(e) {
             document.getElementById('db-status').textContent = "설정 오류: " + e.message;
             document.getElementById('db-status').className = "mt-2 font-bold text-red-500";
@@ -440,7 +437,6 @@
             "122870": "블랙핑크, 베이비몬스터 등 글로벌 IP를 보유한 엔터 기업"
         };
 
-        // 🟢 V32: 랜덤 뉴스 데이터 대폭 확장 (섹터별/종목별 다수 추가)
         const NEWS_TEMPLATES = {
             'Market': [
                 { text: "미국 연준(Fed), 기준금리 동결 시사... 안도 랠리 기대", type: "good", impact: 0.03 },
@@ -654,11 +650,11 @@
             }, 3000);
         };
 
-        // 🟢 V31: 랜덤 뉴스 주기 변경 (40초 ~ 60초)
+        // 🟢 [안전 모드] 무료 요금제 폭발 방지 (60초 ~ 120초)
         function startAutoNewsLoop() {
             if (!currentUser || currentUser.role !== 'admin') return;
-            const minDelay = 40000;
-            const maxDelay = 60000;
+            const minDelay = 60000;  // 1분
+            const maxDelay = 120000; // 2분
             const delay = Math.floor(Math.random() * (maxDelay - minDelay + 1)) + minDelay;
             setTimeout(async () => {
                 if (gameState.isOpen) {
@@ -799,7 +795,7 @@
                 const mainCode = codes[Math.floor(Math.random() * codes.length)];
                 const mainStock = marketData[mainCode];
                 const sector = mainStock.sector;
-                const templateList = NEWS_TEMPLATES[sector] || NEWS_TEMPLATES['Default']; // 🟢 섹터별 템플릿 우선 적용
+                const templateList = NEWS_TEMPLATES[sector] || NEWS_TEMPLATES['Default'];
                 const template = templateList[Math.floor(Math.random() * templateList.length)];
                 newsText = template.text.replace("{name}", mainStock.name);
                 newsType = template.type;
@@ -928,7 +924,7 @@
             document.getElementById('modal-stock-code').innerText = code;
             document.getElementById('modal-sector').innerText = stock.sector + " Sector";
             
-            // 🟢 V31: 기업 설명 복구 확인 및 적용
+            // 🟢 기업 설명 복구
             const desc = COMPANY_DESCRIPTIONS[code] || "대한민국 대표 우량 기업입니다.";
             document.getElementById('modal-desc').innerText = desc;
             
@@ -1202,13 +1198,10 @@
             }
         }
 
-        // 🟢 V31: 기사 모달 (자동 문단 나누기 적용)
+        // 🟢 기사 모달 (자동 문단 나누기 적용)
         window.openArticleModal = (title, content, time) => {
             if(!content) return;
-            
-            // 텍스트 가독성을 위해 마침표 뒤에 문단 나누기 적용 (단, 내용은 건들지 않음)
             const formattedContent = content.replace(/\.(?=\s)/g, '.<br><br>');
-            
             document.getElementById('article-title').innerText = title;
             document.getElementById('article-content').innerHTML = formattedContent;
             document.getElementById('article-time').innerText = time + " 속보";
