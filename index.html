@@ -653,8 +653,8 @@
         // 🟢 [안전 모드] 무료 요금제 폭발 방지 (60초 ~ 120초)
         function startAutoNewsLoop() {
             if (!currentUser || currentUser.role !== 'admin') return;
-            const minDelay = 60000;  // 1분
-            const maxDelay = 120000; // 2분
+            const minDelay = 40000;  // 1분
+            const maxDelay = 60000; // 2분
             const delay = Math.floor(Math.random() * (maxDelay - minDelay + 1)) + minDelay;
             setTimeout(async () => {
                 if (gameState.isOpen) {
